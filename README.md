@@ -10,10 +10,10 @@ A lightweight, responsive chat widget for easily integrating GeniStudio AI chatb
 - **Typing Indicators** - Shows when AI is typing a response
 - **Customizable** - Change colors, position, and appearance
 - **Popup Animation** - Smooth animation when opening the chat
-- **Full-screen Mode** - Expand button for fullscreen experience
+- **Full-screen Mode** - Expand button for fullscreen experience (working on it)
 - **Mobile Optimization** - Automatically adapts to smaller screens
 - **Performance** - Fast loading, minimal dependencies
-- **Accessibility** - Built with accessibility in mindfeatured chat interface that works across all devices.
+- **Accessibility** - Built with accessibility in mindfeatured chat interface that works across all devices. (working on it)
 
 ## ⚡ Quick Start
 

@@ -42,10 +42,8 @@
     "build": "rollup -c rollup.config.js",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
-    "prepare": "npm run build",
     "lint": "eslint src --fix",
     "format": "prettier --write \"src/**/*.js\"",
-    "prepublishOnly": "npm run build",
     "serve": "node server.js"
   },
   "devDependencies": {
