@@ -33,3 +33,5 @@ coverage/
 *.log
 
 server.js
+
+bun.lock
