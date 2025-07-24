@@ -35,3 +35,5 @@ coverage/
 server.js
 
 bun.lock
+
+examples/
