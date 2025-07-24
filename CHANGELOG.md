@@ -2,9 +2,20 @@
 
 All notable changes to the GeniStudio Web Chat Widget will be documented in this file.
 
+## [1.0.6] - 2025-07-24
+
+### Fixed
+
+- Fixed input box styling issue where text appeared with dark background
+- Improved input field contrast and readability
+- Enhanced input box styling to override conflicting host website CSS
+- Fixed input placeholder text visibility
+- Strengthened CSS specificity for input elements to prevent style conflicts
+
 ## [1.0.5] - 2025-07-24
 
 ### Added
+
 - New expand/fullscreen button in chat header
 - Fullscreen mode with smooth animation
 - Improved mobile fullscreen experience
@@ -12,6 +23,7 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 - Response time measurement for chatbot replies (console logging)
 
 ### Changed
+
 - Chat window now appears above the button with smooth animation
 - Button now toggles the chat open/closed
 - Enhanced expand button styling and functionality
@@ -21,6 +33,7 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 - Updated example files to demonstrate new features
 
 ### Fixed
+
 - Fixed CSS syntax errors and duplicate styles
 - Fixed event handling for expand button
 - Improved handling of mobile viewport changes
@@ -28,12 +41,14 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 ## [1.0.4] - 2025-07-23
 
 ### Added
+
 - Support for WebSocket message type `ai_typing` to show typing indicator
 - Full mobile responsiveness with proper viewport handling
 - Button icon changes to X when chat is open
 - Smooth popup animation when opening chat window
 
 ### Changed
+
 - Refactored build system for CDN-only usage
 - Simplified code structure by removing React/TypeScript
 - Updated chat window positioning to appear above button
@@ -41,6 +56,7 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 - Improved event handling to prevent duplicate listeners
 
 ### Fixed
+
 - Fixed missing import in message-bubbles.js
 - Fixed chat button click event handling
 - Improved transition animations for smoother experience
@@ -48,40 +64,47 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 ## [1.0.3] - 2025-07-23
 
 ### Added
-- CDN examples (examples/cdn/index.html, simple.html) 
+
+- CDN examples (examples/cdn/index.html, simple.html)
 - New serve script for local testing
 - Simple Node.js server for demo purposes
 
 ### Changed
+
 - Removed demo mode from webchat.js
 - Updated styling for more professional appearance
 - Streamlined package.json dependencies
 - Improved button hover effects
 
 ### Fixed
+
 - Fixed inconsistencies in chat container structure
 - Improved mobile device detection
 
 ## [1.0.2] - 2025-07-22
 
 ### Added
+
 - Single IIFE build for CDN usage
 - Improved documentation for CDN integration
 - Better handling of avatar positioning and styling
 
 ### Changed
+
 - Updated README.md with clear CDN usage instructions
 - Simplified exports in package.json
 - Improved chat container styling
 - Enhanced message bubble layout
 
 ### Removed
+
 - Removed React/TypeScript dependencies
 - Removed unnecessary demo code
 
 ## [1.0.1] - 2025-07-22
 
 ### Changed
+
 - Improved and clarified README documentation:
   - Explicitly states widget is for GeniStudio chatbot only (not Saful Pay or others)
   - Clear separation: CDN usage for HTML only, npm package for frameworks (React, etc.)
@@ -95,6 +118,7 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 ## [1.0.0] - 2025-07-21
 
 ### Added
+
 - Initial release of the GeniStudio Web Chat Widget
 - React components: `WebChatButton` and `WebChatWidget`
 - Vanilla JavaScript widget with auto-initialization
@@ -108,6 +132,7 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 - Auto-generated user IDs for session management
 
 ### Features
+
 - 🎨 **Customizable UI** - Colors, themes, positioning
 - 📱 **Mobile responsive** - Works on all device sizes
 - 🚀 **Easy integration** - npm package or CDN
@@ -118,6 +143,7 @@ All notable changes to the GeniStudio Web Chat Widget will be documented in this
 - 📦 **Multiple formats** - React components + vanilla JS
 
 ### Technical
+
 - Built with TypeScript
 - Rollup bundling for optimal size
 - CSS-in-JS for component styling
