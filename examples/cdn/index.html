@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeniStudio Widget - CDN Example</title>
+  <!-- Load the GeniStudio CSS -->
+  <link rel="stylesheet" href="/dist/index.cdn.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f8fa;
+    }
+    
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    h1 {
+      color: #0091ae;
+      margin-bottom: 24px;
+    }
+    
+    h2 {
+      color: #33475b;
+      margin-top: 32px;
+      font-size: 20px;
+    }
+    
+    code {
+      background-color: #f5f8fa;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .btn {
+      background-color: #0091ae;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px 5px 10px 0;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    .btn:hover {
+      background-color: #007a8c;
+    }
+    
+    .code-block {
+      background-color: #f5f8fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      font-family: 'Courier New', monospace;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GeniStudio Web Chat Widget - CDN Example</h1>
+    
+    <p>This example demonstrates how to use the GeniStudio Web Chat Widget directly from a CDN without any build tools or npm packages.</p>
+    
+    <h2>CDN Implementation</h2>
+    <p>Simply include the script and CSS from a CDN like JSDelivr or unpkg:</p>
+    
+    <div class="code-block">
+      &lt;!-- Include the CSS --&gt;<br>
+      &lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/genistudio-bot-widget@latest/dist/index.css"&gt;<br><br>
+      &lt;!-- Include the JavaScript --&gt;<br>
+      &lt;script src="https://cdn.jsdelivr.net/npm/genistudio-bot-widget@latest/dist/index.cdn.js"&gt;&lt;/script&gt;
+    </div>
+    
+    <h2>Initialize the Widget</h2>
+    <p>Initialize the chat widget by calling the global <code>GeniStudioWebChat.initWebChat()</code> function:</p>
+    
+    <div class="code-block">
+      &lt;script&gt;<br>
+      // Define configuration<br>
+      window.GeniStudioConfig = {<br>
+      &nbsp;&nbsp;apiKey: 'YOUR_API_KEY',<br>
+      &nbsp;&nbsp;botName: 'GeniBot',<br>
+      &nbsp;&nbsp;welcomeMessage: 'Hello! How can I assist you today?',<br>
+      &nbsp;&nbsp;theme: {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;primaryColor: '#0091ae'<br>
+      &nbsp;&nbsp;}<br>
+      };<br><br>
+      // The widget will auto-initialize when the script loads<br>
+      // Or you can manually initialize it:<br>
+      // window.GeniStudioWebChat.initWebChat(window.GeniStudioConfig);<br>
+      &lt;/script&gt;
+    </div>
+    
+    <h2>Control the Widget</h2>
+    <p>Try the interactive buttons below to control the chat widget:</p>
+    
+    <button class="btn" id="openChat">Open Chat</button>
+    <button class="btn" id="closeChat">Close Chat</button>
+    <button class="btn" id="sendMessage">Send Message</button>
+    <button class="btn" id="resetChat">Reset Chat</button>
+  </div>
+
+  <!-- Configure the widget before loading the script -->
+  <script>
+    // Define the configuration
+    window.GeniStudioConfig = {
+      apiUrl: 'ws://localhost:7001/api',           // WebSocket endpoint
+      chatbotId: 'cm9jc4y3c0001kz046c5vipcl',      // Your chatbot ID
+      chatbotName: 'GeniBot',                     // Name displayed in chat header
+      position: 'bottom-right'                    // Button position
+    };
+
+    // Add event listeners for the buttons
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get references to buttons
+      const openButton = document.getElementById('openChat');
+      const closeButton = document.getElementById('closeChat');
+      const sendButton = document.getElementById('sendMessage');
+      const resetButton = document.getElementById('resetChat');
+
+      // Add click handlers
+      openButton.addEventListener('click', function() {
+        if (window.GeniStudioWebChat) {
+          window.GeniStudioWebChat.open();
+        }
+      });
+
+      closeButton.addEventListener('click', function() {
+        if (window.GeniStudioWebChat) {
+          window.GeniStudioWebChat.close();
+        }
+      });
+
+      sendButton.addEventListener('click', function() {
+        if (window.GeniStudioWebChat) {
+          window.GeniStudioWebChat.open();
+          // Small delay to ensure the chat is open
+          setTimeout(() => {
+            window.GeniStudioWebChat.sendMessage('Hello! This is a test message sent programmatically.');
+          }, 500);
+        }
+      });
+
+      resetButton.addEventListener('click', function() {
+        if (window.GeniStudioWebChat) {
+          window.GeniStudioWebChat.reset();
+          alert('Chat history has been reset!');
+        }
+      });
+    });
+  </script>
+
+  <!-- Load the GeniStudio script -->
+  <script src="/dist/index.cdn.js"></script>
+  
+  <!-- Production usage would look like this: -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/genistudio-bot-widget@latest/dist/index.cdn.js"></script> -->
+</body>
+</html>

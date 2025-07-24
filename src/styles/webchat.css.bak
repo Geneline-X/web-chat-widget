@@ -1,0 +1,781 @@
+/**
+ * GeniStudio Web Chat Widget
+ * Main CSS styles - HubSpot-style design
+ */
+
+/* Reset some basic elements to avoid conflicts with other styles */
+.webchat-overlay * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Prevent scrolling on body when chat is open on mobile */
+body.webchat-open {
+  overflow: hidden;
+}
+
+/* Main chat widget button */
+#GeniStudio-chat-button {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #0091ae;
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 145, 174, 0.4);
+  z-index: 10001; /* Higher than the overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+  pointer-events: auto; /* Ensure clicks are captured */
+}
+
+#GeniStudio-chat-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 145, 174, 0.5);
+}
+
+/* Chat button when in "close" mode */
+#GeniStudio-chat-button.is-open {
+  font-size: 18px; /* Make the X slightly smaller */
+  background: #e05e5e; /* Change to a red/close color */
+}
+
+#GeniStudio-chat-button.is-open:hover {
+  background: #d84545; /* Darker on hover */
+}
+
+/* Chat overlay container */
+.webchat-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  z-index: 10000;
+  display: block;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none; /* This ensures the overlay doesn't block clicks */
+}
+
+.webchat-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Add this class when the chat is open */
+.webchat-overlay.visible .webchat-container {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Main chat container - HubSpot style */
+.webchat-container {
+  position: absolute;
+  width: 95%;
+  max-width: 380px;
+  height: 600px;
+  max-height: 80vh;
+  background-color: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  pointer-events: auto; /* Re-enable pointer events for the container */
+  z-index: 9999; /* High but below the button */
+  
+  /* Position the chat widget based on the button position */
+  bottom: 90px; /* 20px (button margin) + 60px (button height) + 10px (space) */
+  right: 20px; /* Same as the button right margin */
+  
+  /* Animation properties */
+  transform-origin: bottom right;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+/* Expanded chat window */
+.webchat-container.expanded {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  transform: none !important;
+  z-index: 10005; /* Above everything */
+  border-radius: 0;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease-in-out;
+  animation: expand-animation 0.3s forwards;
+}
+
+/* Animation for expanding to fullscreen */
+@keyframes expand-animation {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Adjust expanded mode for mobile */
+@media (max-width: 768px) {
+  .webchat-container.expanded {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
+/* Header styles - HubSpot style */
+.webchat-header {
+  padding: 16px;
+  background-color: #0091ae;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+}
+
+.webchat-header-info {
+  display: flex;
+  align-items: center;
+}
+
+.webchat-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.webchat-header-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.webchat-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.webchat-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0091ae;
+  font-weight: bold;
+  margin-right: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.webchat-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.webchat-status {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.webchat-minimize-btn,
+.webchat-expand-btn,
+.webchat-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+/* Special styling for expand button */
+.webchat-expand-btn {
+  margin-right: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.webchat-expand-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+/* Style for when container is expanded - different icon */
+.webchat-container.expanded .webchat-expand-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.webchat-container.expanded .webchat-expand-btn:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+.webchat-minimize-btn:hover,
+.webchat-close:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Header styling in expanded mode */
+.webchat-container.expanded .webchat-header {
+  padding: 20px 24px;
+}
+
+/* Add transition effects for smooth expansion */
+.webchat-container {
+  transition: all 0.3s ease-out;
+}
+
+/* Change button appearance when in expanded mode */
+.webchat-container.expanded .webchat-expand-btn {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Messages container - HubSpot style */
+.webchat-messages-wrapper {
+  flex: 1;
+  overflow: hidden;
+  background-color: #f5f8fa;
+  position: relative;
+}
+
+.webchat-messages {
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Message bubbles - HubSpot style with avatar */
+.webchat-message-bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  width: 100%;
+  margin: 2px 0;
+}
+
+.webchat-message-bubble-wrapper.user-wrapper {
+  align-items: flex-end;
+}
+
+.webchat-bubble-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.webchat-message-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #0091ae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 4px; /* Align with the top of the message bubble */
+}
+
+.webchat-avatar-img-small {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.webchat-message-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  position: relative;
+  line-height: 1.5;
+  font-size: 14px;
+  border-radius: 18px;
+}
+
+.webchat-message-bubble.user {
+  background-color: #0091ae;
+  color: white;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+
+.webchat-message-bubble.bot {
+  background-color: white;
+  color: #33475b;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  align-self: flex-start;
+}
+
+.webchat-message-bubble.error {
+  background-color: #fdf1f0;
+  color: #e74c3c;
+  border: 1px solid #fadbd8;
+}
+
+/* Date separators - HubSpot style */
+.webchat-date-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0;
+  position: relative;
+}
+
+.webchat-date-separator::before {
+  content: '';
+  height: 1px;
+  background-color: #cbd6e2;
+  flex-grow: 1;
+  margin-right: 8px;
+}
+
+.webchat-date-separator::after {
+  content: '';
+  height: 1px;
+  background-color: #cbd6e2;
+  flex-grow: 1;
+  margin-left: 8px;
+}
+
+.webchat-date-text {
+  font-size: 12px;
+  color: #7c98b6;
+  padding: 0 8px;
+  background-color: #f5f8fa;
+  font-weight: 500;
+}
+
+/* Message content - HubSpot style */
+.message-text {
+  word-break: break-word;
+}
+
+.message-timestamp {
+  font-size: 10px;
+  opacity: 0.7;
+  text-align: right;
+  margin-top: 4px;
+  color: inherit;
+}
+
+/* Quick replies - HubSpot style */
+.webchat-quick-replies {
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid #eaf0f6;
+  background-color: white;
+}
+
+.webchat-quick-reply-btn {
+  border: 1px solid #0091ae;
+  color: #0091ae;
+  background-color: white;
+  border-radius: 16px;
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.webchat-quick-reply-btn:hover {
+  background-color: #0091ae;
+  color: white;
+}
+
+/* Typing indicator - HubSpot style */
+.typing-bubble {
+  padding: 10px 16px;
+  min-width: 100px;
+  max-width: 75%;
+}
+
+.typing-wrapper .webchat-bubble-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.typing-text {
+  margin-right: 8px;
+  font-size: 13px;
+  color: #33475b;
+  font-weight: 500;
+}
+
+.typing-dots {
+  display: flex;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #7c98b6;
+  margin-right: 3px;
+  animation: dot-pulse 1.5s infinite ease-in-out;
+}
+
+/* Processing stage styling */
+.processing-bubble {
+  background-color: #f0f7fa;
+  border-left: 3px solid #0091ae;
+}
+
+.processing-bubble .typing-text {
+  color: #0091ae;
+}
+
+.typing-dot.processing-dot {
+  background-color: #0091ae;
+  animation: dot-pulse-processing 1.5s infinite ease-in-out;
+}
+
+/* Thinking stage styling */
+.thinking-bubble {
+  background-color: #f7f9fa;
+  border-left: 3px solid #516f90;
+}
+
+.thinking-bubble .typing-text {
+  color: #516f90;
+}
+
+.typing-dot.thinking-dot {
+  background-color: #516f90;
+  animation: dot-pulse-thinking 1.2s infinite ease-in-out;
+}
+
+/* Animation for processing dots */
+@keyframes dot-pulse-processing {
+  0%, 100% { 
+    transform: scale(0.7);
+    opacity: 0.5;
+    background-color: #0091ae;
+  }
+  50% { 
+    transform: scale(1.0);
+    opacity: 1;
+    background-color: #33c6dd;
+  }
+}
+
+/* Animation for thinking dots */
+@keyframes dot-pulse-thinking {
+  0%, 100% { 
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  50% { 
+    transform: scale(1.0);
+    opacity: 1;
+  }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { 
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  50% { 
+    transform: scale(1.0);
+    opacity: 1;
+  }
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 16px;
+  background-color: #33475b;
+  animation: blink 1s infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Input area - HubSpot style */
+.webchat-input-form {
+  padding: 12px 16px;
+  border-top: 1px solid #eaf0f6;
+  background-color: white;
+}
+
+.webchat-input-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.webchat-input {
+  flex: 1;
+  border: 1px solid #cbd6e2;
+  border-radius: 24px;
+  padding: 10px 16px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.webchat-input:focus {
+  border-color: #0091ae;
+  box-shadow: 0 0 0 3px rgba(0, 145, 174, 0.15);
+}
+
+.webchat-send-button {
+  background-color: #0091ae;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  padding: 0;
+}
+
+.webchat-send-button:hover {
+  background-color: #007a8c;
+}
+
+.webchat-send-button:disabled {
+  background-color: #cbd6e2;
+  cursor: not-allowed;
+}
+
+/* Footer - HubSpot style */
+.webchat-footer {
+  padding: 8px;
+  text-align: center;
+  font-size: 11px;
+  color: #7c98b6;
+  background-color: white;
+  border-top: 1px solid #eaf0f6;
+}
+
+/* Empty state - HubSpot style */
+.webchat-empty-watermark {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+  color: #516f90;
+}
+
+.webchat-empty-icon {
+  color: #cbd6e2;
+  margin-bottom: 16px;
+}
+
+.webchat-empty-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.webchat-empty-text {
+  font-size: 14px;
+  color: #7c98b6;
+  max-width: 240px;
+}
+
+/* Markdown styling - HubSpot style */
+.webchat-message-bubble.bot a {
+  color: #0091ae;
+  text-decoration: underline;
+}
+
+.webchat-message-bubble.bot code {
+  background-color: #f5f8fa;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 90%;
+  color: #33475b;
+}
+
+.webchat-message-bubble.bot pre {
+  background-color: #f5f8fa;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.webchat-message-bubble.bot ul, 
+.webchat-message-bubble.bot ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.webchat-message-bubble.bot p {
+  margin-bottom: 8px;
+}
+
+.webchat-message-bubble.bot p:last-child {
+  margin-bottom: 0;
+}
+
+/* Animations */
+@keyframes scale-in {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up-fade {
+  0% {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mobile fullscreen animation */
+@keyframes mobile-slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .webchat-overlay.visible {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .webchat-container {
+    width: 100%;
+    height: 100vh;
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform-origin: bottom;
+    z-index: 10002; /* Higher than button */
+    transform: translateY(100%); /* Start offscreen */
+    transition: transform 0.3s ease-out, opacity 0.3s ease;
+  }
+  
+  .webchat-overlay.visible .webchat-container {
+    transform: translateY(0); /* Slide up into view */
+    opacity: 1;
+  }
+  
+  /* Enhanced mobile fullscreen experience */
+  .webchat-container.expanded {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    animation: none; /* Remove animation for smoother mobile experience */
+  }
+}
+  
+  .webchat-messages {
+    padding-bottom: 70px; /* Make room for the input on smaller screens */
+  }
+  
+  /* Make the header more visible on mobile */
+  .webchat-header {
+    padding: 16px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  
+  /* Make the close button more prominent on mobile */
+  .webchat-close {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  
+  /* Adjust footer for mobile */
+  .webchat-footer {
+    padding: 12px 16px;
+  }
+  
+  /* Ensure the chat button stays above the overlay on mobile */
+  #GeniStudio-chat-button.is-open {
+    z-index: 10003;
+  }
+}
