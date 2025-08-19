@@ -166,7 +166,6 @@ The widget outputs helpful messages to the browser console, including:
 - Message events
 - Response times
 
-
 ## License
 
 MIT License - see LICENSE file for details.
