@@ -27,7 +27,7 @@ import { generateUserId, groupMessagesBySender } from "../utils/ui-helpers";
  */
 export function initWebChat(userConfig = {}) {
   let config = {
-    apiUrl: "ws://localhost:7001/api",
+    apiUrl: "wss://middleware-api-be5j.onrender.com/api",
     chatbotId: "",
     buttonColor: "#007bff",
     position: "bottom-right",
