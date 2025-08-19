@@ -2,7 +2,7 @@
 
 A lightweight, responsive chat widget for easily integrating GeniStudio AI chatbot on any website. This modern web widget provide
 
-## ✨ Features
+## Features
 
 - **Simple Integration** - Just a few lines of code to add to any website
 - **Responsive Design** - Works on desktop and mobile devices
@@ -33,7 +33,7 @@ Add the GeniStudio web chat widget to any website with just a few lines of code:
 
 That's it! The chat widget will automatically initialize and add a chat button to your website with a beautiful, responsive interface.
 
-## 🔧 Configuration Options
+## Configuration Options
 
 Configure the widget by setting properties in the `window.GeniStudioConfig` object:
 
@@ -48,7 +48,7 @@ window.GeniStudioConfig = {
 };
 ```
 
-## 🎮 JavaScript API
+## JavaScript API
 
 The widget exposes methods through the `window.GeniStudioWebChat` object:
 
@@ -76,7 +76,7 @@ const config = {
 window.GeniStudioWebChat.initWebChat(config);
 ```
 
-## 💅 Styling Options
+## Styling Options
 
 ### 1. Button and Color Customization
 
@@ -88,7 +88,7 @@ window.GeniStudioConfig = {
 };
 ```
 
-## 📱 Mobile Support
+## Mobile Support
 
 The widget is fully responsive and optimized for mobile devices:
 
@@ -98,7 +98,7 @@ The widget is fully responsive and optimized for mobile devices:
 - Smooth animations and transitions
 - Expand button for toggling fullscreen mode on any device
 
-## 🔒 Privacy and Security
+## Privacy and Security
 
 - The widget operates fully within your website's domain
 - All communications use secure WebSocket connections
@@ -116,62 +116,17 @@ The library is available via CDN for simple integration:
 <script src="https://cdn.jsdelivr.net/npm/genistudio-bot-widget@latest/dist/index.cdn.js"></script>
 ```
 
-### CSS Injection
-
-For vanilla JavaScript implementations, you can use the injectCSS option instead of including the CSS file separately:
-
-```html
-<script>
-  window.GeniStudioConfig = {
-    apiUrl: 'ws://your-websocket-api-url',
-    chatbotId: 'your-chatbot-id',
-    injectCSS: true // Use this instead of the separate CSS file
-  };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/genistudio-bot-widget@latest/dist/index.cdn.js"></script>
-<!-- No need for the CSS import when using injectCSS -->
-```
-
-This ensures the widget's styles won't affect the rest of your website.
-
-### JavaScript API Usage Example
-
-```html
-<button id="openBtn">Open Chat</button>
-<button id="closeBtn">Close Chat</button>
-<button id="sendBtn">Send Test Message</button>
-
-<script>
-  document.getElementById('openBtn').addEventListener('click', function() {
-    window.GeniStudioWebChat.open();
-  });
-  
-  document.getElementById('closeBtn').addEventListener('click', function() {
-    window.GeniStudioWebChat.close();
-  });
-  
-  document.getElementById('sendBtn').addEventListener('click', function() {
-    window.GeniStudioWebChat.open();
-    setTimeout(() => {
-      window.GeniStudioWebChat.sendMessage('Hello! This is a test message.');
-    }, 300);
-  });
-</script>
-```
-
 ## ⚙️ Configuration Options
 
 All available options for customizing your chat widget:
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `apiUrl` | Yes | - | Your WebSocket API endpoint |
+| `apiUrl` | No | - | Your WebSocket API endpoint |
 | `chatbotId` | Yes | - | Your chatbot ID (e.g. 'cm9jc4y3c0001kz046c5vipcl') |
 | `chatbotName` | No | 'GeniStudio Support' | Name shown in chat header |
 | `buttonColor` | No | '#0091ae' | Chat button color (CSS color) |
 | `position` | No | 'bottom-right' | Button position: 'bottom-right', 'bottom-left', 'top-right', 'top-left' |
-| `injectCSS` | No | false | Whether to automatically inject CSS |
-| `avatarUrl` | No | '' | URL to a custom avatar image for your chatbot |
 
 ## 📋 API Reference
 
@@ -186,19 +141,6 @@ The widget exposes the following methods through the global `window.GeniStudioWe
 | `sendMessage(text)` | Sends a message programmatically |
 | `reset()` | Clears the chat history |
 
-## 🔧 WebSocket Integration
-
-The widget connects to your backend via WebSocket. The protocol expects the following message types:
-
-| Message Type | Direction | Description |
-|--------------|-----------|-------------|
-| `auth_success` | Server → Client | Authentication successful |
-| `auth_error` | Server → Client | Authentication failed |
-| `message` | Both ways | Text message content |
-| `message_received` | Server → Client | Message was received by server |
-| `ai_typing` | Server → Client | Indicates AI is typing (status: true/false) |
-| `message_chunk` | Server → Client | Streaming chunk of a message |
-| `message_complete` | Server → Client | Streaming message is complete |
 
 ## 🔍 Troubleshooting
 
@@ -216,12 +158,6 @@ The widget connects to your backend via WebSocket. The protocol expects the foll
 - Check for correct chatbot ID
 - Ensure your server supports the required message types
 
-**Styling conflicts?**
-
-- Try enabling the `injectCSS: true` option
-- For complete isolation, use `useShadowDOM: true`
-- Add higher specificity selectors for custom styles
-
 ### Console Logging
 
 The widget outputs helpful messages to the browser console, including:
@@ -230,15 +166,7 @@ The widget outputs helpful messages to the browser console, including:
 - Message events
 - Response times
 
-## 🛠️ Local Development
 
-To develop or modify this package locally:
-
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Run development server: `npm run dev`
-4. Build for production: `npm run build`
-
-## � License
+## License
 
 MIT License - see LICENSE file for details.
