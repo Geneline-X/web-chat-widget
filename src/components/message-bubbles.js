@@ -7,11 +7,22 @@ import { formatTime, getAbbreviation } from "../utils/ui-helpers";
 /**
  * Render a message bubble for the chat
  * @param {Object} message - Message object
+ * @param {boolean} [isNewMessage=true] - Whether this is a new message being added
  * @returns {HTMLElement} - Message bubble DOM element
  */
-export function renderMessageBubble(message) {
+export function renderMessageBubble(message, isNewMessage = true) {
   const wrapper = document.createElement("div");
   wrapper.className = `webchat-message-bubble-wrapper ${message.sender}-wrapper`;
+  
+  // Add animation class for new messages
+  if (isNewMessage) {
+    wrapper.classList.add('message-entering');
+    
+    // Remove the animation class after animation completes
+    setTimeout(() => {
+      wrapper.classList.remove('message-entering');
+    }, 500);
+  }
 
   // For bot messages, create a container with avatar and message side by side
   if (message.sender === "bot") {
@@ -84,13 +95,24 @@ export function renderMessageBubble(message) {
 /**
  * Render typing indicator
  * @param {string} [stage='typing'] - The processing stage ('processing', 'typing', 'thinking')
+ * @param {boolean} [isNewMessage=true] - Whether this is a new typing indicator
  * @returns {HTMLElement} - Typing indicator DOM element
  */
-export function renderTypingIndicator(stage = "typing") {
+export function renderTypingIndicator(stage = "typing", isNewMessage = true) {
   // Create wrapper with avatar for HubSpot-style layout
   const wrapper = document.createElement("div");
   wrapper.className =
     "webchat-message-bubble-wrapper bot-wrapper typing-wrapper";
+
+  // Add animation class for new typing indicators
+  if (isNewMessage) {
+    wrapper.classList.add('message-entering');
+    
+    // Remove the animation class after animation completes
+    setTimeout(() => {
+      wrapper.classList.remove('message-entering');
+    }, 400);
+  }
 
   // Create bubble container to align avatar and typing bubble side by side
   const bubbleContainer = document.createElement("div");
