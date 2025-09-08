@@ -1,6 +1,6 @@
 {
   "name": "genistudio-bot-widget",
-  "version": "1.0.9",
+  "version": "2.0.0",
   "description": "A full-screen, embeddable web chat widget for GeniStudio AI chatbot integration",
   "main": "dist/index.cdn.js",
   "cdn": "dist/index.cdn.js",
