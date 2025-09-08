@@ -1,12 +1,10 @@
 /**
  * GeniStudio Web Chat Widget - Main Module
- * Connects UI components and WebSocket communication
+ * Connects UI components and GeniStudio HTTP API communication
  */
 import {
-  connectWebSocket,
-  sendWebSocketMessage,
-  cleanupWebSocket,
-} from "./websocket";
+  sendMessageToAPI,
+} from "./api-client";
 import {
   renderMessageBubble,
   renderTypingIndicator,
@@ -14,6 +12,7 @@ import {
   renderDateSeparator,
   renderQuickReplies,
 } from "../components/message-bubbles";
+import { parseMarkdown } from "../utils/markdown";
 import {
   createChatButton,
   createChatContainer,
@@ -27,10 +26,10 @@ import { generateUserId, groupMessagesBySender } from "../utils/ui-helpers";
  */
 export function initWebChat(userConfig = {}) {
   let config = {
-    apiUrl: "wss://middleware-api-be5j.onrender.com/api",
+    apiUrl: "http://localhost:3000/api/chatbot/stream",
     chatbotId: "",
-    buttonColor: "#007bff",
-    position: "bottom-right",
+    userEmail: "",
+    buttonColor: "",
     injectCSS: false,
     ...userConfig,
   };
@@ -39,13 +38,22 @@ export function initWebChat(userConfig = {}) {
     config.chatbotName = "GeniStudio Support";
   }
 
+  // Validate required configuration
+  if (!config.chatbotId) {
+    console.error("GeniStudio: chatbotId is required");
+    return null;
+  }
+
+  // Generate user email if not provided
+  if (!config.userEmail) {
+    const userId = generateUserId();
+    config.userEmail = `${userId}@webchat.genistudio.com`;
+  }
+
   // State variables
   let isOpen = false;
   let messages = [];
   let isLoading = false;
-  let websocket = null;
-  let isConnected = false;
-  let userId = generateUserId();
   let currentStreamingMessage = null;
 
   // Timing variables for response time measurement
@@ -74,27 +82,6 @@ export function initWebChat(userConfig = {}) {
 
   const chatContainer = createChatContainer(config, chatContainerAPI);
   document.body.appendChild(chatContainer);
-
-  // Initialize WebSocket connection
-  connectWebSocket(
-    config.apiUrl,
-    config.chatbotId,
-    userId,
-    handleWebSocketMessage,
-    updateConnectionStatus
-  )
-    .then((ws) => {
-      websocket = ws;
-      isConnected = true;
-    })
-    .catch((error) => {
-      console.error("Failed to connect WebSocket:", error);
-
-      // Show a connection error message
-      handleStreamingError(
-        "Could not connect to chat service. Please try again later."
-      );
-    });
 
   // Set up page unload handler
   if (typeof window !== "undefined") {
@@ -135,52 +122,32 @@ export function initWebChat(userConfig = {}) {
       // Position the chat container based on button position
       positionChatContainer();
 
-      // First remove hidden class
+      // Show the overlay
       overlay.classList.remove("hidden");
+      overlay.classList.add("visible");
 
-      // Give the browser a moment to process the display change before adding the visible class
-      setTimeout(() => {
-        overlay.classList.add("visible");
-
-        // On mobile, add a body class to prevent scrolling
-        if (isMobile) {
-          document.body.classList.add("webchat-open");
-          // Hide the chat button on mobile fullscreen mode if needed
-          // chatButton.style.visibility = 'hidden';
-        }
-      }, 10);
+      // On mobile, add a body class to prevent scrolling
+      if (isMobile) {
+        document.body.classList.add("webchat-open");
+      }
 
       renderMessages();
 
       // Update button appearance for "close" state
       if (chatButton) {
-        chatButton.innerHTML = "✕"; // Change to an X icon
-        chatButton.title = "Close chat";
         chatButton.classList.add("is-open");
+        chatButton.title = "Close chat";
       }
 
       // Emit chat opened event for React integration
       emitEvent("chatOpened");
 
-      // Reconnect WebSocket if needed
-      if (!isConnected) {
-        connectWebSocket(
-          config.apiUrl,
-          config.chatbotId,
-          userId,
-          handleWebSocketMessage,
-          updateConnectionStatus
-        ).then((ws) => {
-          websocket = ws;
-          isConnected = true;
-        });
-      }
-
       const input = document.getElementById("GeniStudio-input");
       if (input && !input.disabled) input.focus();
     } else {
-      // First remove the visible class to trigger animation
+      // Hide the overlay
       overlay.classList.remove("visible");
+      overlay.classList.add("hidden");
 
       // Check if we're on mobile
       const isMobile = window.innerWidth <= 768;
@@ -188,20 +155,12 @@ export function initWebChat(userConfig = {}) {
       // On mobile, remove body class that prevents scrolling
       if (isMobile) {
         document.body.classList.remove("webchat-open");
-        // Restore chat button visibility if it was hidden
-        // chatButton.style.visibility = 'visible';
       }
-
-      // Wait for animation to complete before hiding the overlay
-      setTimeout(() => {
-        overlay.classList.add("hidden");
-      }, 300); // Match this with the CSS transition duration
 
       // Update button appearance for "open" state
       if (chatButton) {
-        chatButton.innerHTML = "💬"; // Change back to chat icon
-        chatButton.title = "Open chat";
         chatButton.classList.remove("is-open");
+        chatButton.title = "Open chat";
       }
 
       // Emit chat closed event for React integration
@@ -262,8 +221,9 @@ export function initWebChat(userConfig = {}) {
     isOpen = false;
     const overlay = document.getElementById("GeniStudio-chat-overlay");
 
-    // First remove the visible class to trigger animation
+    // Hide the overlay
     overlay.classList.remove("visible");
+    overlay.classList.add("hidden");
 
     // Check if we're on mobile
     const isMobile = window.innerWidth <= 768;
@@ -271,100 +231,116 @@ export function initWebChat(userConfig = {}) {
     // On mobile, remove body class that prevents scrolling
     if (isMobile) {
       document.body.classList.remove("webchat-open");
-      // Restore chat button visibility if it was hidden
-      // const chatButton = document.getElementById('GeniStudio-chat-button');
-      // if (chatButton) chatButton.style.visibility = 'visible';
     }
-
-    // Wait for animation to complete before hiding the overlay
-    setTimeout(() => {
-      overlay.classList.add("hidden");
-    }, 300); // Match this with the CSS transition duration
 
     // Reset the chat button to "open" state
     const chatButton = document.getElementById("GeniStudio-chat-button");
     if (chatButton) {
-      chatButton.innerHTML = "💬";
-      chatButton.title = "Open chat";
       chatButton.classList.remove("is-open");
+      chatButton.title = "Open chat";
     }
 
     // Emit chat closed event for React integration
     emitEvent("chatClosed");
   }
 
-  function handleWebSocketMessage(data) {
-    console.log("WebSocket message received:", data);
+  function handleAPIStreamingChunk(chunk) {
+    console.log("Received API streaming chunk:", chunk);
+    if (!currentStreamingMessage) {
+      // Create a new streaming message if one doesn't exist
+      const now = new Date();
 
-    // Log timestamp of message received for performance tracking
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] Message type: ${data.type}`);
+      // Find the last user message to calculate time to first chunk
+      const lastUserMessage = [...messages]
+        .reverse()
+        .find((m) => m.sender === "user");
+      if (lastUserMessage && messageTimestamps[lastUserMessage.id]) {
+        const sentAt = messageTimestamps[lastUserMessage.id].sentAt;
+        const timeToFirstChunkMs = now - sentAt;
+        const timeToFirstChunkSec = (timeToFirstChunkMs / 1000).toFixed(2);
+        const formattedTime = formatResponseTime(timeToFirstChunkSec);
 
-    switch (data.type) {
-      case "auth_success":
-        console.log("Authentication successful");
-        updateConnectionStatus("authenticated");
-        break;
+        // Log time to first response to console
+        console.log(`Time to first response: ${formattedTime}`);
+      }
 
-      case "auth_error":
-        console.error("Authentication failed:", data.message);
-        updateConnectionStatus("auth_failed");
-        break;
+      currentStreamingMessage = {
+        id: Date.now(),
+        text: "",
+        sender: "bot",
+        timestamp: now,
+        isStreaming: true,
+      };
+      messages.push(currentStreamingMessage);
+      hideTypingIndicator();
+      
+      // Add the new bot message with animation for the first chunk
+      addNewMessageWithAnimation(currentStreamingMessage);
+    }
 
-      case "message_received":
-        // Server has received the message, now it's processing
-        showTypingIndicator("processing");
-        break;
-
-      case "thinking_start":
-        // Server is thinking about the response
-        showTypingIndicator("thinking");
-        break;
-
-      case "typing_start":
-        // Server is actively generating the response, show typing indicator
-        showTypingIndicator("typing");
-        break;
-
-      case "typing_stop":
-        hideTypingIndicator();
-        break;
-
-      case "ai_typing":
-        // Handle ai_typing message type
-        if (data.status === true) {
-          showTypingIndicator("typing");
-        } else {
-          hideTypingIndicator();
+    // Append the chunk to the current streaming message
+    currentStreamingMessage.text += chunk;
+    
+    // For subsequent chunks, just re-render without full page refresh
+    const container = document.getElementById("GeniStudio-messages");
+    const lastMessage = container?.lastElementChild;
+    if (lastMessage && currentStreamingMessage) {
+      const textContent = lastMessage.querySelector('.message-text');
+      if (textContent) {
+        textContent.innerHTML = parseMarkdown(currentStreamingMessage.text || "");
+        if (currentStreamingMessage.isStreaming) {
+          textContent.innerHTML += '<span class="cursor">|</span>';
         }
-        break;
+      }
+    }
+    
+    // Scroll to bottom with improved timing for streaming updates
+    forceScrollToBottom();
+  }
 
-      case "message_chunk":
-        // While receiving chunks, show typing indicator
-        showTypingIndicator("typing");
-        handleStreamingChunk(data.chunk);
-        break;
+  function handleAPIStreamingComplete(data) {
+    console.log("API streaming complete received:", data);
+    if (currentStreamingMessage) {
+      // Calculate and log response time
+      const lastUserMessage = [...messages]
+        .reverse()
+        .find((m) => m.sender === "user");
+      if (lastUserMessage && messageTimestamps[lastUserMessage.id]) {
+        const sentAt = messageTimestamps[lastUserMessage.id].sentAt;
+        const completedAt = new Date();
+        const totalTimeMs = completedAt - sentAt;
+        const totalTimeSec = (totalTimeMs / 1000).toFixed(2);
+        const formattedTime = formatResponseTime(totalTimeSec);
 
-      case "message_complete":
-        completeStreamingMessage();
-        break;
+        console.log(`Total response time: ${formattedTime}`);
+      }
 
-      case "error":
-        handleStreamingError(data.message);
-        break;
+      currentStreamingMessage.isStreaming = false;
+      currentStreamingMessage = null;
+    }
+    
+    hideTypingIndicator();
+    enableInput();
+    
+    // Re-render to remove streaming indicator
+    renderMessages();
+    
+    console.log("API streaming complete:", data);
+  }
 
-      case "pong":
-        // Handle heartbeat response
-        break;
+  function handleAPIError(errorMessage) {
+    console.error("API error:", errorMessage);
+    handleStreamingError(errorMessage);
+    
+    // Enable input after error
+    enableInput();
+  }
 
-      case "message":
-        handleBotMessage(data);
-        break;
-
-      // Handle any other message type that might contain text
-      default:
-        handleBotMessage(data);
-        break;
+  function handleAPITyping(isTyping) {
+    if (isTyping) {
+      showTypingIndicator("typing");
+    } else {
+      hideTypingIndicator();
     }
   }
 
@@ -454,80 +430,8 @@ export function initWebChat(userConfig = {}) {
 
       renderMessages();
       enableInput();
-      // Reset connection status to online when message is received
-      updateConnectionStatus("authenticated");
     } else {
-      console.warn("Unknown WebSocket message type or missing text:", data);
-      // Reset connection status even if no message is found
-      updateConnectionStatus("authenticated");
-    }
-  }
-
-  function handleStreamingChunk(chunk) {
-    if (!currentStreamingMessage) {
-      // This is the first chunk of the response
-      const now = new Date();
-
-      // Find the last user message to calculate time to first chunk
-      const lastUserMessage = [...messages]
-        .reverse()
-        .find((m) => m.sender === "user");
-      if (lastUserMessage && messageTimestamps[lastUserMessage.id]) {
-        const sentAt = messageTimestamps[lastUserMessage.id].sentAt;
-        const timeToFirstChunkMs = now - sentAt;
-        const timeToFirstChunkSec = (timeToFirstChunkMs / 1000).toFixed(2);
-        const formattedTime = formatResponseTime(timeToFirstChunkSec);
-
-        // Log time to first response to console
-        console.log(`Time to first response: ${formattedTime}`);
-      }
-
-      currentStreamingMessage = {
-        id: Date.now(),
-        text: "",
-        sender: "bot",
-        timestamp: now,
-        isStreaming: true,
-        firstChunkTime: now, // Record when the first chunk arrived
-      };
-      messages.push(currentStreamingMessage);
-      hideTypingIndicator();
-    }
-    currentStreamingMessage.text += chunk;
-    renderMessages();
-  }
-
-  function completeStreamingMessage() {
-    if (currentStreamingMessage) {
-      // Hide typing indicator when streaming is complete
-      hideTypingIndicator();
-
-      // Calculate and log response time
-      // Find the last user message to calculate response time
-      const lastUserMessage = [...messages]
-        .reverse()
-        .find((m) => m.sender === "user");
-
-      if (lastUserMessage && messageTimestamps[lastUserMessage.id]) {
-        const now = new Date();
-        const sentAt = messageTimestamps[lastUserMessage.id].sentAt;
-        const responseTimeMs = now - sentAt;
-        const responseTimeSec = (responseTimeMs / 1000).toFixed(2);
-        const formattedTime = formatResponseTime(responseTimeSec);
-
-        // Log response time to console
-        console.log(`Stream completed. Response time: ${formattedTime}`);
-
-        // Clean up the timestamp record to prevent memory leaks
-        delete messageTimestamps[lastUserMessage.id];
-      }
-
-      currentStreamingMessage.isStreaming = false;
-      currentStreamingMessage = null;
-      renderMessages();
-      enableInput();
-      // Reset connection status when streaming is complete
-      updateConnectionStatus("authenticated");
+      console.warn("Unknown API message format or missing text:", data);
     }
   }
 
@@ -548,67 +452,58 @@ export function initWebChat(userConfig = {}) {
     renderMessages();
     enableInput();
     currentStreamingMessage = null;
-
-    // Update status to show error state
-    updateConnectionStatus("error");
   }
 
   /**
    * Show typing indicator with different stages
    * @param {string} [stage='typing'] - The current processing stage ('processing', 'thinking', 'typing')
    */
+  /**
+   * Add a typing indicator with animation
+   * @param {string} stage - The processing stage
+   */
+  function addTypingIndicatorWithAnimation(stage = "typing") {
+    const container = document.getElementById("GeniStudio-messages");
+    if (!container) return;
+
+    // Remove any existing typing indicator first
+    const existingTyping = container.querySelector('.typing-wrapper');
+    if (existingTyping) {
+      existingTyping.remove();
+    }
+
+    // Create and append the new typing indicator with animation
+    const typingElement = renderTypingIndicator(stage, true);
+    container.appendChild(typingElement);
+
+    // Auto-scroll to the new typing indicator with improved timing
+    forceScrollToBottom();
+  }
+
   function showTypingIndicator(stage = "typing") {
     isLoading = true;
     currentProcessingStage = stage;
-    renderMessages();
+    addTypingIndicatorWithAnimation(stage);
   }
 
   function hideTypingIndicator() {
     isLoading = false;
     currentProcessingStage = null;
-    renderMessages();
-  }
-
-  function updateConnectionStatus(status) {
-    const statusElement = document.querySelector(".webchat-status");
-    if (!statusElement) return;
-
-    // Reset status element content
-    let statusText = "";
-    let statusColor = "";
-
-    switch (status) {
-      case "connected":
-        statusText = "● Connected";
-        statusColor = "#90ee90";
-        break;
-      case "authenticated":
-        statusText = "● Online";
-        statusColor = "#90ee90";
-        break;
-      case "disconnected":
-        statusText = "● Disconnected";
-        statusColor = "#ffa500";
-        break;
-      case "error":
-      case "auth_failed":
-        statusText = "● Offline";
-        statusColor = "#ff6b6b";
-        break;
+    
+    // Remove the typing indicator with animation
+    const container = document.getElementById("GeniStudio-messages");
+    if (container) {
+      const existingTyping = container.querySelector('.typing-wrapper');
+      if (existingTyping) {
+        existingTyping.style.opacity = '0';
+        existingTyping.style.transform = 'translateX(-30px) scale(0.9)';
+        setTimeout(() => {
+          if (existingTyping.parentNode) {
+            existingTyping.remove();
+          }
+        }, 300);
+      }
     }
-
-    // Create or update the status elements
-    statusElement.innerHTML = statusText;
-    statusElement.style.color = statusColor;
-
-    // Update the footer text
-    const footerElement = document.querySelector(".webchat-footer span");
-    if (footerElement) {
-      footerElement.textContent = "Powered by GeniStudio AI";
-    }
-
-    // Re-render messages
-    renderMessages();
   }
 
   function enableInput() {
@@ -630,6 +525,66 @@ export function initWebChat(userConfig = {}) {
 
   // Track current processing stage
   let currentProcessingStage = null;
+
+  /**
+   * Scroll to the bottom of the messages container with better timing
+   */
+  function scrollToBottom() {
+    const messagesContainer = document.getElementById("GeniStudio-messages");
+    if (messagesContainer) {
+      // Use requestAnimationFrame to ensure DOM updates are complete
+      requestAnimationFrame(() => {
+        // Double requestAnimationFrame to ensure all layouts are complete
+        requestAnimationFrame(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+      });
+    }
+  }
+
+  /**
+   * Force scroll to bottom with smooth behavior (alternative method)
+   */
+  function forceScrollToBottom() {
+    const messagesContainer = document.getElementById("GeniStudio-messages");
+    if (messagesContainer) {
+      // Try multiple methods to ensure scrolling works
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      // Also try scrollIntoView on the last message
+      const lastMessage = messagesContainer.lastElementChild;
+      if (lastMessage) {
+        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+      
+      // Final fallback with setTimeout
+      setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 100);
+    }
+  }
+
+  /**
+   * Add a new message to the chat with animation
+   * @param {Object} message - The message object to add
+   */
+  function addNewMessageWithAnimation(message) {
+    const container = document.getElementById("GeniStudio-messages");
+    if (!container) return;
+
+    // Add the bot's name for avatar display
+    if (message.sender === "bot") {
+      message.botName = config.chatbotName;
+      message.avatar = config.avatarUrl;
+    }
+
+    // Create and append the new message with animation
+    const messageElement = renderMessageBubble(message, true);
+    container.appendChild(messageElement);
+
+    // Auto-scroll to the new message with improved timing
+    forceScrollToBottom();
+  }
 
   function renderMessages() {
     const container = document.getElementById("GeniStudio-messages");
@@ -665,12 +620,14 @@ export function initWebChat(userConfig = {}) {
         message.avatar = config.avatarUrl;
       }
 
-      container.appendChild(renderMessageBubble(message));
+      // Don't animate existing messages when re-rendering
+      container.appendChild(renderMessageBubble(message, false));
     });
 
     // Show typing indicator with appropriate stage
     if (isLoading) {
-      container.appendChild(renderTypingIndicator(currentProcessingStage));
+      // Always animate typing indicators since they're always new
+      container.appendChild(renderTypingIndicator(currentProcessingStage, true));
     }
 
     // Render quick reply options if available
@@ -697,7 +654,8 @@ export function initWebChat(userConfig = {}) {
       }
     }
 
-    container.scrollTop = container.scrollHeight;
+    // Ensure we scroll to bottom after all content is rendered
+    forceScrollToBottom();
   }
 
   function sendMessage(event) {
@@ -706,21 +664,7 @@ export function initWebChat(userConfig = {}) {
     const input = document.getElementById("GeniStudio-input");
     const message = input.value.trim();
 
-    if (!message || isLoading || !isConnected) {
-      if (!isConnected) {
-        console.warn("Cannot send message: WebSocket not connected");
-        // Try to reconnect
-        connectWebSocket(
-          config.apiUrl,
-          config.chatbotId,
-          userId,
-          handleWebSocketMessage,
-          updateConnectionStatus
-        ).then((ws) => {
-          websocket = ws;
-          isConnected = true;
-        });
-      }
+    if (!message || isLoading) {
       return;
     }
 
@@ -743,13 +687,24 @@ export function initWebChat(userConfig = {}) {
 
     messages.push(userMessage);
     input.value = "";
+    
+    // Reset textarea height to default size
+    const initialHeight = input.getAttribute('data-initial-height') || '47px';
+    input.style.height = initialHeight;
+    
+    // Reset form border radius to default
+    const form = document.querySelector(".chat-form");
+    if (form) {
+      form.style.borderRadius = "25px";
+    }
+    
     disableInput();
+
+    // Add the new user message with animation instead of re-rendering all
+    addNewMessageWithAnimation(userMessage);
 
     // Show processing indicator immediately when sending the message
     showTypingIndicator("processing");
-
-    // Force render the messages
-    renderMessages();
 
     // Scroll to bottom
     const messagesContainer = document.getElementById("GeniStudio-messages");
@@ -757,17 +712,20 @@ export function initWebChat(userConfig = {}) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // Send via WebSocket
-    try {
-      const success = sendWebSocketMessage(websocket, message);
-
-      if (!success) {
-        handleStreamingError("Failed to send message. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error sending WebSocket message:", error);
+    // Send via GeniStudio HTTP API
+    sendMessageToAPI(
+      config.apiUrl,
+      config.chatbotId,
+      config.userEmail,
+      message,
+      handleAPIStreamingChunk,
+      handleAPIStreamingComplete,
+      handleAPIError,
+      handleAPITyping
+    ).catch((error) => {
+      console.error("Error sending message to GeniStudio API:", error);
       handleStreamingError("Failed to send message. Please try again.");
-    }
+    });
   }
 
   /**
@@ -798,31 +756,35 @@ export function initWebChat(userConfig = {}) {
     // Disable input during processing
     disableInput();
 
+    // Add the new user message with animation instead of re-rendering all
+    addNewMessageWithAnimation(userMessage);
+
     // Show processing indicator
     showTypingIndicator("processing");
 
-    // Render messages to show the user's selection
-    renderMessages();
-
     // Send the message to the server
-    if (isConnected && websocket) {
-      const payload = {
-        type: "message",
-        message: text,
-        quickReplyValue: value,
-        userId: userId,
-        chatbotId: config.chatbotId,
-        timestamp: new Date().toISOString(),
-      };
-
-      sendWebSocketMessage(websocket, payload);
-    }
+    sendMessageToAPI(
+      config.apiUrl,
+      config.chatbotId,
+      config.userEmail,
+      text, // Use text instead of value for the message content
+      handleAPIStreamingChunk,
+      handleAPIStreamingComplete,
+      handleAPIError,
+      handleAPITyping
+    ).catch((error) => {
+      console.error("Error sending quick reply to GeniStudio API:", error);
+      handleStreamingError("Failed to send message. Please try again.");
+    });
   }
 
   function cleanup() {
-    cleanupWebSocket(websocket);
-    websocket = null;
-    isConnected = false;
+    // Clean up any ongoing streaming messages
+    currentStreamingMessage = null;
+    
+    // Clean up event listeners if needed
+    // No WebSocket to cleanup since we're using HTTP API
+    console.log("Chat widget cleanup completed");
   }
 
   // CSS injection is handled by the main index.js file
