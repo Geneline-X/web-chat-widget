@@ -1,1233 +1,634 @@
-/**
- * GeniStudio Web Chat Widget
- * Modern Animated UI Design
+/* Importing Google Fonts - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap');
+
+/*
+ * GeniStudio Web Chat Widget - Color Inheritance System
+ * 
+ * This widget automatically inherits colors from your website or buttonColor config. To customize:
+ * 
+ * 1. Via Configuration (Recommended):
+ *    Set `buttonColor: '#your-color'` in your widget config
+ *    This will automatically theme the entire widget with your brand color
+ * 
+ * 2. Via CSS Variables (Advanced):
+ *    Set any of these CSS variables in your website's CSS:
+ *    --primary-color, --brand-color, or --accent-color (for main theme color)
+ *    --primary-hover, --brand-hover, or --accent-hover (for hover states)
+ *    --text-color or --primary-text (for text colors)
+ *    --background-color or --bg-color (for backgrounds)
+ *    --border-color or --gray-200 (for borders)
+ *    --muted-text or --text-secondary (for secondary text)
+ *    --light-background or --gray-50 (for light backgrounds)
+ * 
+ * 3. The widget will automatically use these colors if they exist,
+ *    or fall back to default values if they don't.
  */
 
-/* Reset some basic elements to avoid conflicts with other styles */
-.webchat-overlay * {
-  box-sizing: border-box;
+/* CSS Custom Properties for color inheritance */
+:root {
+  --webchat-primary-color: var(--primary-color, var(--brand-color, var(--accent-color, #5350C4)));
+  --webchat-primary-hover: var(--primary-hover, var(--brand-hover, var(--accent-hover, #3d39ac)));
+  --webchat-text-color: var(--text-color, var(--primary-text, #333));
+  --webchat-bg-color: var(--background-color, var(--bg-color, #ffffff));
+  --webchat-border-color: var(--border-color, var(--gray-200, #e5e7eb));
+  --webchat-muted-text: var(--muted-text, var(--text-secondary, #666));
+  --webchat-light-bg: var(--light-background, var(--gray-50, #f9fafb));
+}
+
+* {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
 }
 
-/* Prevent scrolling on body when chat is open on mobile */
-body.webchat-open {
-  overflow: hidden;
-}
-
-/* Animated background shapes */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-20px) rotate(120deg);
-  }
-  66% {
-    transform: translateY(10px) rotate(240deg);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(100%) scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes slideInFromLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes slideInFromRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes typing {
-  0%, 60%, 100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Main chat widget button with gradient */
-#GeniStudio-chat-button {
+/* Chat Button Styles */
+.webchat-button {
   position: fixed;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  bottom: 30px;
+  right: 35px;
   border: none;
-  font-size: 24px;
+  outline: none;
+  height: 65px;
+  width: 65px;
+  display: flex;
   cursor: pointer;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
-  z-index: 10001;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--webchat-primary-color);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 10000;
+  animation: chatButtonBounce 2s ease-in-out infinite;
+}
+
+/* Add a pulsing ring effect */
+.webchat-button::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border: 2px solid var(--webchat-primary-color);
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulseRing 2s cubic-bezier(0.25, 0, 0, 1) infinite;
+}
+
+@keyframes chatButtonBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-8px) scale(1.05);
+  }
+  60% {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  80%, 100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.webchat-button:hover {
+  transform: scale(1.1);
+  animation: none;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.webchat-button:hover::before {
+  animation: none;
+  opacity: 0;
+}
+
+.webchat-button .chat-icon {
+  color: #fff;
+  font-size: 26px;
+  transition: opacity 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: auto;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  animation: pulse 3s ease-in-out infinite;
-  position: relative;
-  overflow: hidden;
 }
 
-/* Shimmer effect */
-#GeniStudio-chat-button::before {
-  content: '';
+.webchat-button .chat-icon svg {
+  width: 30px;
+  height: 30px;
+  fill: #fff;
+}
+
+.webchat-button .close-icon {
+  color: #fff;
+  font-size: 24px;
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s ease;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#GeniStudio-chat-button:hover {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.6);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  animation: none; /* Stop pulsing on hover */
+.webchat-button .close-icon svg {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
 }
 
-#GeniStudio-chat-button:hover::before {
-  left: 100%;
+.webchat-button.is-open .chat-icon {
+  opacity: 0;
 }
 
-#GeniStudio-chat-button:active {
-  transform: scale(0.95);
+.webchat-button.is-open .close-icon {
+  opacity: 1;
 }
 
-/* Chat button when in "close" mode */
-#GeniStudio-chat-button.is-open {
-  font-size: 18px;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.4);
+.webchat-button.is-open {
+  transform: rotate(90deg);
+  animation: none; /* Disable bouncing animation when open */
 }
 
-#GeniStudio-chat-button.is-open:hover {
-  transform: scale(1.1) rotate(-5deg);
-  background: linear-gradient(135deg, #ee5a24 0%, #ff6b6b 100%);
-  box-shadow: 0 12px 40px rgba(255, 107, 107, 0.6);
+.webchat-button.is-open::before {
+  animation: none; /* Disable pulsing ring animation when open */
+  opacity: 0;
 }
 
-/* Animated background shapes */
-.webchat-bg-shapes {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: -1;
+/* Powered By Styles */
+.webchat-powered-by {
+  text-align: center;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
-.webchat-bg-shape {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.1;
-  animation: float 6s ease-in-out infinite;
+.webchat-powered-by:hover {
+  opacity: 1;
 }
 
-.webchat-bg-shape:nth-child(1) {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  top: 10%;
-  left: 10%;
-  animation-delay: 0s;
+.webchat-powered-by .powered-text {
+  color: #999;
+  font-weight: 400;
 }
 
-.webchat-bg-shape:nth-child(2) {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(45deg, #f093fb, #f5576c);
-  top: 20%;
-  right: 20%;
-  animation-delay: 1s;
+.webchat-powered-by .geni-studio {
+  color: var(--webchat-primary-color);
+  font-weight: 600;
+  margin-left: 3px;
 }
 
-.webchat-bg-shape:nth-child(3) {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(45deg, #4facfe, #00f2fe);
-  bottom: 30%;
-  left: 15%;
-  animation-delay: 2s;
-}
-
-.webchat-bg-shape:nth-child(4) {
-  width: 100px;
-  height: 100px;
-  background: linear-gradient(45deg, #43e97b, #38f9d7);
-  bottom: 10%;
-  right: 10%;
-  animation-delay: 3s;
-}
-
-.webchat-bg-shape:nth-child(5) {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(45deg, #fa709a, #fee140);
-  top: 50%;
-  left: 5%;
-  animation-delay: 4s;
-}
-
-/* Chat overlay container */
+/* Chat Container Styles */
 .webchat-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 10000;
-  display: block;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-  backdrop-filter: blur(2px);
-}
-
-.webchat-overlay.hidden {
+  right: 35px;
+  bottom: 105px;
+  width: 420px;
+  overflow: hidden;
+  background: var(--webchat-bg-color);
+  border-radius: 15px;
   opacity: 0;
   pointer-events: none;
-  visibility: hidden;
+  transform: scale(0.2);
+  transform-origin: bottom right;
+  box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
+    0 32px 64px -48px rgba(0, 0, 0, 0.5);
+  transition: all 0.1s ease;
+  z-index: 10000;
 }
 
 .webchat-overlay.visible {
   opacity: 1;
   pointer-events: auto;
-  visibility: visible;
+  transform: scale(1);
 }
 
-/* Add this class when the chat is open */
-.webchat-overlay.visible .webchat-container {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
-
-/* Main chat container - Modern animated design */
-.webchat-container {
-  position: fixed;
-  width: 95%;
-  max-width: 400px;
-  height: 650px;
-  max-height: 85vh;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 248, 255, 0.8));
-  backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 24px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 
-    0 20px 70px rgba(0, 0, 0, 0.1),
-    0 10px 40px rgba(102, 126, 234, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  pointer-events: auto;
-  z-index: 9999;
+.webchat-overlay.hidden {
   opacity: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Position the chat widget based on the button position */
-  bottom: 90px; /* 20px (button margin) + 60px (button height) + 10px (space) */
-  right: 20px; /* Same as the button right margin */
-  
-  /* Animation properties */
-  transform-origin: bottom right;
-  transform: scale(0.8) translateY(20px);
-}
-
-/* Floating background shapes */
-.webchat-container::before,
-.webchat-container::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  border-radius: 50%;
-  opacity: 0.3;
-  animation: float 6s ease-in-out infinite;
-}
-
-.webchat-container::before {
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  top: -60px;
-  right: -60px;
-  animation-delay: -2s;
-}
-
-.webchat-container::after {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #764ba2 0%, #f093fb 100%);
-  bottom: -40px;
-  left: -40px;
-  animation-delay: -4s;
-}
-
-/* Expanded chat window */
-.webchat-container.expanded {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  max-width: none;
-  height: 100%;
-  max-height: none;
-  transform: none !important;
-  z-index: 10005; /* Above everything */
-  border-radius: 0;
-  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease-in-out;
-  animation: expand-animation 0.3s forwards;
-}
-
-/* Animation for expanding to fullscreen */
-@keyframes expand-animation {
-  0% {
-    opacity: 0.9;
-    transform: scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Adjust expanded mode for mobile */
-@media (max-width: 768px) {
-  .webchat-container.expanded {
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-  }
-}
-
-/* Header styles - Modern gradient design */
-.webchat-header {
-  padding: 24px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: white;
-  position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.webchat-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -50%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.webchat-header-info {
-  display: flex;
-  align-items: center;
-  z-index: 1;
-  position: relative;
-}
-
-.webchat-header-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  font-size: 18px;
-  font-weight: 600;
-  animation: pulse 2s infinite;
-}
-
-.webchat-header-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.webchat-header-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.webchat-header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.webchat-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1460d3;
-  font-weight: bold;
-  margin-right: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-}
-
-.webchat-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.webchat-status {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.webchat-minimize-btn,
-.webchat-expand-btn,
-.webchat-close {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s, transform 0.2s;
-}
-
-/* Special styling for expand button */
-.webchat-expand-btn {
-  margin-right: 4px;
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.webchat-expand-btn:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
-}
-
-/* Style for when container is expanded - different icon */
-.webchat-container.expanded .webchat-expand-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.webchat-container.expanded .webchat-expand-btn:hover {
-  background-color: rgba(255, 255, 255, 0.35);
-}
-
-.webchat-minimize-btn:hover,
-.webchat-close:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Header styling in expanded mode */
-.webchat-container.expanded .webchat-header {
-  padding: 20px 24px;
-}
-
-/* Add transition effects for smooth expansion */
-.webchat-container {
-  transition: all 0.3s ease-out;
-}
-
-/* Change button appearance when in expanded mode */
-.webchat-container.expanded .webchat-expand-btn {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Messages container - Modern glass design */
-.webchat-messages-wrapper {
-  flex: 1;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(247, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
-  position: relative;
-  backdrop-filter: blur(10px);
-}
-
-.webchat-messages-wrapper::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
   pointer-events: none;
+  transform: scale(0.2);
 }
 
-.webchat-messages {
-  height: 100%;
-  overflow-y: auto;
-  padding: 24px 20px;
+.webchat-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-/* Message bubbles - HubSpot style with avatar */
-.webchat-message-bubble-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  position: relative;
+  height: 600px;
   width: 100%;
-  margin: 2px 0;
-  opacity: 1;
-  transform: translateY(0);
 }
 
-.webchat-message-bubble-wrapper.user-wrapper {
-  align-items: flex-end;
+/* Chat Header */
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 22px;
+  background: var(--webchat-primary-color);
+  justify-content: space-between;
 }
 
-.webchat-message-bubble-wrapper.bot-wrapper {
+.chat-header .header-info {
+  display: flex;
+  gap: 12px;                                      
+  align-items: center;
+}
+
+.header-info .chatbot-logo {
+  width: 35px;
+  height: 35px;
+  padding: 6px;
+  fill: var(--webchat-primary-color);
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-info .logo-text {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.31rem;
+  letter-spacing: 0.02rem;
+  line-height: 1;
+  margin: 0;
+}
+
+.chat-header .close-button {
+  border: none;
+  color: #fff;
+  height: 40px;
+  width: 40px;
+  font-size: 1.9rem;
+  margin-right: -10px;
+  cursor: pointer;
+  border-radius: 50%;
+  background: none;
+  transition: 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-header .close-button:hover {
+  background: var(--webchat-primary-hover);
+}
+
+/* Chat Body */
+.chat-body {
+  display: flex;
+  height: 460px;
+  background: var(--webchat-light-bg);
+  margin-bottom: 30px;
+  flex-direction: column;
+  overflow: hidden; /* Prevent double scrollbars */
+  padding: 0; /* Remove padding so scrollbar is at edge */
+}
+
+/* Messages container styling - this handles the scrolling */
+.webchat-messages {
+  padding: 25px 22px;
+  gap: 20px;
+  display: flex;
+  height: 460px;
+  overflow-y: auto;
+  margin-bottom: 82px;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: #ccccf5 transparent;
+}
+
+.webchat-messages:hover {
+  scrollbar-color: #ccccf5 transparent;
+}
+
+/* Custom scrollbar styles for WebKit browsers */
+.webchat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.webchat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.webchat-messages::-webkit-scrollbar-thumb {
+  background-color: #ccccf5;
+  border-radius: 3px;
+}
+
+.webchat-messages::-webkit-scrollbar-thumb:hover {
+  background-color: #aaaae0;
+}
+
+/* Ensure last message has enough space at bottom */
+.webchat-messages > *:last-child {
+  margin-bottom: 10px;
+}
+
+/* Message Styles */
+.webchat-messages .message {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: messageSlideIn 0.3s ease forwards;
+}
+
+.chat-body .message:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes messageSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-body .message.message-entering {
+  animation: messageSlideIn 0.3s ease forwards;
+}
+
+.chat-body .message .bot-avatar {
+  width: 35px;
+  height: 35px;
+  padding: 6px;
+  fill: #fff;
+  flex-shrink: 0;
+  align-self: flex-start;
+  border-radius: 50%;
+  background: var(--webchat-primary-color);
+  margin-top: 2px;
+}
+
+.chat-body .message .message-text {
+  padding: 12px 16px;
+  max-width: 75%;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.chat-body .bot-message.thinking .message-text {
+  padding: 2px 16px;
+}
+
+.chat-body .bot-message .message-text {
+  background: #F2F2FF;
+  border-radius: 13px 13px 13px 3px;
+  color: var(--webchat-text-color);
+}
+
+.chat-body .user-message {
+  flex-direction: row-reverse;
   align-items: flex-start;
 }
 
-/* Animation for NEW messages only */
-.webchat-message-bubble-wrapper.message-entering {
-  opacity: 0;
-  animation: messageEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.chat-body .user-message .message-text {
+  color: #fff;
+  background: var(--webchat-primary-color);
+  border-radius: 13px 13px 3px 13px;
+  margin-left: auto;
 }
 
-.webchat-message-bubble-wrapper.user-wrapper.message-entering {
-  transform: translateX(30px) scale(0.95);
-  animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* Thinking Indicator */
+.chat-body .bot-message .thinking-indicator {
+  display: flex;
+  gap: 4px;
+  padding-block: 15px;
 }
 
-.webchat-message-bubble-wrapper.bot-wrapper.message-entering {
-  transform: translateX(-30px) scale(0.95);
-  animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.chat-body .bot-message .thinking-indicator .dot {
+  height: 7px;
+  width: 7px;
+  opacity: 0.7;
+  border-radius: 50%;
+  background: #6F6BC2;
+  animation: dotPulse 1.8s ease-in-out infinite;
 }
 
-@keyframes messageEnter {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
+.chat-body .bot-message .thinking-indicator .dot:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.chat-body .bot-message .thinking-indicator .dot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.chat-body .bot-message .thinking-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%,
+  44% {
+    transform: translateY(0);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+  28% {
+    opacity: 0.4;
+    transform: translateY(-4px);
+  }
+  44% {
+    opacity: 0.2;
   }
 }
 
-.webchat-bubble-container {
+/* Streaming Cursor */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: var(--webchat-primary-color);
+  margin-left: 2px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Chat Footer */
+.chat-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  padding: 15px 22px 20px;
+}
+
+.chat-footer .chat-form {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
-  width: 100%;
-}
-
-.webchat-message-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: #1460d3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 10px;
-  flex-shrink: 0;
-  margin-top: 4px; /* Align with the top of the message bubble */
-}
-
-.webchat-avatar-img-small {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.webchat-message-bubble {
-  max-width: 80%;
-  padding: 16px 20px;
   position: relative;
-  line-height: 1.6;
-  font-size: 15px;
-  font-weight: 400;
-  border-radius: 24px;
-  margin: 8px 0;
-  backdrop-filter: blur(10px);
-  word-wrap: break-word;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(0) scale(1);
+  background: #fff;
+  border-radius: 25px;
+  outline: 1px solid #CCCCE5;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.06);
+  transition: 0.2s ease;
 }
 
-.webchat-message-bubble:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+.chat-form:focus-within {
+  outline: 2px solid var(--webchat-primary-color);
 }
 
-.webchat-message-bubble.user {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-bottom-right-radius: 8px;
-  align-self: flex-end;
-  margin-left: auto;
-  position: relative;
-  overflow: hidden;
-}
-
-.webchat-message-bubble.user::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
+.chat-form .message-input {
   width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.webchat-message-bubble.user:hover::before {
-  left: 100%;
-}
-
-.webchat-message-bubble.bot {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  color: #2d3748;
-  border-bottom-left-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  align-self: flex-start;
-  margin-right: auto;
-  position: relative;
-}
-
-.webchat-message-bubble.bot::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
-  background-size: 300% 100%;
-  animation: gradientShift 3s ease infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.webchat-message-bubble.bot:hover::after {
-  opacity: 1;
-}
-
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.webchat-message-bubble.error {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-  color: white;
+  min-height: 47px;
+  max-height: 69px;
+  outline: none;
+  resize: none;
   border: none;
+  scrollbar-width: thin;
+  border-radius: inherit;
+  font-size: 0.95rem;
+  padding: 14px 18px 12px 18px;
+  scrollbar-color: transparent transparent;
+  overflow-y: auto;
+  font-family: inherit;
+  line-height: 1.4;
 }
 
-/* Date separators - HubSpot style */
-.webchat-date-separator {
+.chat-form .message-input::placeholder {
+  color: #999;
+  font-weight: 400;
+}
+
+.chat-form .chat-controls {
+  gap: 3px;
+  height: 47px;
+  display: flex;
+  padding-right: 6px;
+  align-items: flex-end;
+  padding-bottom: 6px;
+}
+
+.chat-form .chat-controls .send-button {
+  height: 35px;
+  width: 35px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  background: var(--webchat-primary-color);
+  transition: 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 16px 0;
+}
+
+.chat-form .chat-controls .send-button:hover {
+  background: var(--webchat-primary-hover);
+}
+
+.chat-form .chat-controls .send-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.chat-form .message-input:not(:valid) ~ .chat-controls .send-button {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Empty State */
+.webchat-empty-state {
+  padding: 20px 0;
+}
+
+.webchat-empty-state .message {
+  margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+  .webchat-button {
+    right: 20px;
+    bottom: 20px;
+  }
+  
+  .webchat-overlay {
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    border-radius: 0;
+    width: 100%;
+    transform-origin: center;
+  }
+  
+  .webchat-overlay .chat-header {
+    padding: 12px 15px;
+  }
+  
+  .chat-body {
+    height: calc(100vh - 140px);
+    padding: 25px 15px;
+    margin-bottom: 70px;
+  }
+  
+  .chat-footer {
+    padding: 10px 15px 15px;
+  }
+}
+
+/* Quick Replies */
+.webchat-quick-replies-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.webchat-quick-reply-button {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.webchat-quick-reply-button:hover {
+  background: var(--webchat-primary-color);
+  color: #fff;
+  border-color: var(--webchat-primary-color);
+}
+
+/* Date Separator */
+.webchat-date-separator {
+  text-align: center;
+  margin: 20px 0;
   position: relative;
+}
+
+.webchat-date-separator span {
+  background: #fff;
+  color: #666;
+  font-size: 0.8rem;
+  padding: 0 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .webchat-date-separator::before {
   content: '';
-  height: 1px;
-  background-color: #cbd6e2;
-  flex-grow: 1;
-  margin-right: 8px;
-}
-
-.webchat-date-separator::after {
-  content: '';
-  height: 1px;
-  background-color: #cbd6e2;
-  flex-grow: 1;
-  margin-left: 8px;
-}
-
-.webchat-date-text {
-  font-size: 12px;
-  color: #3f86d1;
-  padding: 0 8px;
-  background-color: #f5f8fa;
-  font-weight: 500;
-}
-
-/* Message content - HubSpot style */
-.message-text {
-  word-break: break-word;
-}
-
-.message-timestamp {
-  font-size: 10px;
-  opacity: 0.7;
-  text-align: right;
-  margin-top: 4px;
-  color: inherit;
-}
-
-/* Quick replies - HubSpot style */
-.webchat-quick-replies {
-  padding: 12px 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  border-top: 1px solid #eaf0f6;
-  background-color: white;
-}
-
-.webchat-quick-reply-btn {
-  border: 1px solid #1460d3;
-  color: #1460d3;
-  background-color: white;
-  border-radius: 16px;
-  padding: 6px 16px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.webchat-quick-reply-btn:hover {
-  background-color: #2167cf;
-  color: white;
-}
-
-/* Typing indicator - Modern animated style */
-.typing-bubble {
-  padding: 12px 20px;
-  min-width: 120px;
-  max-width: 75%;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.typing-wrapper {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.typing-wrapper.message-entering {
-  opacity: 0;
-  animation: slideInFromLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.typing-wrapper.message-entering .typing-bubble {
-  transform: translateX(-30px);
-  opacity: 0;
-  animation: slideInFromLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.typing-wrapper .webchat-bubble-container {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.typing-indicator {
-  display: flex;
-  align-items: center;
-}
-
-.typing-text {
-  margin-right: 8px;
-  font-size: 13px;
-  color: #4a5568;
-  font-weight: 500;
-}
-
-.typing-dots {
-  display: flex;
-  gap: 2px;
-}
-
-.typing-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  animation: typing 1.4s infinite ease-in-out;
-}
-
-.typing-dot:nth-child(1) { animation-delay: 0s; }
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-/* Processing stage styling */
-.processing-bubble {
-  background-color: #f0f7fa;
-  border-left: 3px solid #1460d3;
-}
-
-.processing-bubble .typing-text {
-  color: #1460d3;
-}
-
-.typing-dot.processing-dot {
-  background-color: #1460d3;
-  animation: dot-pulse-processing 1.5s infinite ease-in-out;
-}
-
-/* Thinking stage styling */
-.thinking-bubble {
-  background-color: #f7f9fa;
-  border-left: 3px solid #1460d3;
-}
-
-.thinking-bubble .typing-text {
-  color: #4885e0;
-}
-
-.typing-dot.thinking-dot {
-  background-color: #4885e0;
-  animation: dot-pulse-thinking 1.2s infinite ease-in-out;
-}
-
-/* Animation for processing dots */
-@keyframes dot-pulse-processing {
-  0%, 100% { 
-    transform: scale(0.7);
-    opacity: 0.5;
-    background-color: #1460d3;
-  }
-  50% { 
-    transform: scale(1.0);
-    opacity: 1;
-    background-color: #1460d3;
-  }
-}
-
-/* Animation for thinking dots */
-@keyframes dot-pulse-thinking {
-  0%, 100% { 
-    transform: scale(0.7);
-    opacity: 0.5;
-  }
-  50% { 
-    transform: scale(1.0);
-    opacity: 1;
-  }
-}
-
-@keyframes dot-pulse {
-  0%, 100% { 
-    transform: scale(0.7);
-    opacity: 0.5;
-  }
-  50% { 
-    transform: scale(1.0);
-    opacity: 1;
-  }
-}
-
-.cursor {
-  display: inline-block;
-  width: 2px;
-  height: 16px;
-  background-color: #33475b;
-  animation: blink 1s infinite;
-  vertical-align: middle;
-  margin-left: 2px;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* Input area - Modern glass design */
-.webchat-input-form {
-  padding: 20px 24px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: blur(20px) !important;
-  margin: 0 !important;
-  position: relative;
-}
-
-.webchat-input-form::before {
-  content: '';
   position: absolute;
-  top: 0;
+  top: 50%;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+  background: #eee;
+  z-index: 0;
 }
-
-.webchat-input-container {
-  display: flex !important;
-  gap: 12px !important;
-  align-items: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: relative;
-}
-
-.webchat-input {
-  flex: 1;
-  border: 2px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 28px !important;
-  padding: 14px 20px !important;
-  font-size: 15px !important;
-  outline: none !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(20px) !important;
-  color: #2d3748 !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-  box-sizing: border-box !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
-  font-weight: 400;
-}
-
-.webchat-input:focus {
-  border-color: rgba(102, 126, 234, 0.5) !important;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 8px 30px rgba(0, 0, 0, 0.12) !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  color: #2d3748 !important;
-  transform: translateY(-1px);
-}
-
-.webchat-input::placeholder {
-  color: #a0aec0 !important;
-  opacity: 1 !important;
-  font-weight: 400;
-}
-
-.webchat-input:disabled {
-  background: rgba(247, 250, 252, 0.8) !important;
-  color: #a0aec0 !important;
-  cursor: not-allowed !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-.webchat-send-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.webchat-send-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s ease;
-}
-
-.webchat-send-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-}
-
-.webchat-send-button:hover::before {
-  left: 100%;
-}
-
-.webchat-send-button:active {
-  transform: scale(0.98);
-}
-
-.webchat-send-button:disabled {
-  background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Footer - HubSpot style */
-.webchat-footer {
-  padding: 8px;
-  text-align: center;
-  font-size: 11px;
-  color: #7c98b6;
-  background-color: white;
-  border-top: 1px solid #eaf0f6;
-}
-
-/* Empty state - HubSpot style */
-.webchat-empty-watermark {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  padding: 20px;
-  text-align: center;
-  color: #0c4eb3;
-}
-
-.webchat-empty-icon {
-  color: #cbd6e2;
-  margin-bottom: 16px;
-}
-
-.webchat-empty-title {
-  font-weight: 600;
-  font-size: 16px;
-  margin-bottom: 8px;
-}
-
-.webchat-empty-text {
-  font-size: 14px;
-  color: #7c98b6;
-  max-width: 240px;
-}
-
-/* Markdown styling - HubSpot style */
-.webchat-message-bubble.bot a {
-  color: #1765db;
-  text-decoration: underline;
-}
-
-.webchat-message-bubble.bot code {
-  background-color: #f5f8fa;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 90%;
-  color: #33475b;
-}
-
-.webchat-message-bubble.bot pre {
-  background-color: #f5f8fa;
-  padding: 8px;
-  border-radius: 4px;
-  overflow-x: auto;
-  margin: 8px 0;
-}
-
-.webchat-message-bubble.bot ul, 
-.webchat-message-bubble.bot ol {
-  padding-left: 20px;
-  margin: 8px 0;
-}
-
-.webchat-message-bubble.bot p {
-  margin-bottom: 8px;
-}
-
-.webchat-message-bubble.bot p:last-child {
-  margin-bottom: 0;
-}
-
-/* Animations */
-@keyframes scale-in {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-up-fade {
-  0% {
-    transform: translateY(20px) scale(0.9);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-/* Mobile fullscreen animation */
-@keyframes mobile-slide-up {
-  0% {
-    transform: translateY(100%);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .webchat-overlay.visible {
-    background-color: rgba(0, 0, 0, 0.5);
-  }
-  
-  .webchat-container {
-    width: 100%;
-    height: 100vh;
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    transform-origin: bottom;
-    z-index: 10002; /* Higher than button */
-    transform: translateY(100%); /* Start offscreen */
-    transition: transform 0.3s ease-out, opacity 0.3s ease;
-  }
-  
-  .webchat-overlay.visible .webchat-container {
-    transform: translateY(0); /* Slide up into view */
-    opacity: 1;
-  }
-  
-  /* Enhanced mobile fullscreen experience */
-  .webchat-container.expanded {
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100vh;
-    max-height: 100vh;
-    animation: none; /* Remove animation for smoother mobile experience */
-  }
-}
-  
-  .webchat-messages {
-    padding-bottom: 70px; /* Make room for the input on smaller screens */
-  }
-  
-  /* Make the header more visible on mobile */
-  .webchat-header {
-    padding: 16px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-  
-  /* Make the close button more prominent on mobile */
-  .webchat-close {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
-  }
-  
-  /* Adjust footer for mobile */
-  .webchat-footer {
-    padding: 12px 16px;
-  }
-  
-  /* Ensure the chat button stays above the overlay on mobile */
-  #GeniStudio-chat-button.is-open {
-    z-index: 10003;
-  }

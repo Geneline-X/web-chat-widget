@@ -5,11 +5,10 @@
 
 /**
  * Send a message to the GeniStudio API endpoint with streaming support
- * @param {string} apiUrl - API URL (https://message.geneline-x.net/api/v1/message)
+ * @param {string} apiUrl - API URL
  * @param {string} chatbotId - Chatbot ID
  * @param {string} email - User email
  * @param {string} message - Message to send
- * @param {string} apiKey - GeniStudio API Key
  * @param {Function} onChunk - Callback for receiving streaming chunks
  * @param {Function} onComplete - Callback when streaming is complete
  * @param {Function} onError - Callback for errors
@@ -21,7 +20,6 @@ export async function sendMessageToAPI(
   chatbotId,
   email,
   message,
-  apiKey,
   onChunk,
   onComplete,
   onError,
@@ -39,18 +37,19 @@ export async function sendMessageToAPI(
 
     console.log("Sending message to GeniStudio API:", apiUrl, requestBody);
 
-    const response = await fetch("https://message.geneline-x.net/api/v1/message", {
+    const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-            "accept": "text/plain",
-            "X-API-Key": "3ca165529bd1d306269b45d8c6ff50147b80ceca99b3960947478d2125d876d2",
             "Content-Type": "application/json"
         },
         body: JSON.stringify(requestBody)
     });
 
+    console.log("API Response status:", response.status, response.statusText);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error("API response error:", response.status, errorText);
       let errorMessage;
       
       try {
@@ -66,7 +65,33 @@ export async function sendMessageToAPI(
     // Handle streamed response
     const reader = response.body?.getReader();
     if (!reader) {
-      throw new Error("Response body is not readable");
+      // If no streaming support, read the whole response
+      const responseText = await response.text();
+      console.log("Non-streaming response received:", responseText);
+      
+      // Stop typing indicator
+      if (onTyping) onTyping(false);
+      
+      // Try to parse as JSON
+      let messageContent = responseText;
+      try {
+        const jsonResponse = JSON.parse(responseText);
+        if (jsonResponse.message) {
+          messageContent = jsonResponse.message;
+        }
+      } catch (e) {
+        console.warn("Failed to parse JSON response, using raw text:", e);
+      }
+      
+      // Call completion callback
+      if (onComplete) {
+        onComplete({
+          text: messageContent,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      return { text: messageContent };
     }
 
     let accumulatedText = '';
@@ -79,26 +104,50 @@ export async function sendMessageToAPI(
       const chunk = new TextDecoder().decode(value);
       accumulatedText += chunk;
       
-      // Send chunk to callback
+      // Try to extract message from chunk if it's JSON
+      let chunkContent = chunk;
+      try {
+        const jsonChunk = JSON.parse(chunk);
+        if (jsonChunk.message) {
+          chunkContent = jsonChunk.message;
+        }
+      } catch (e) {
+        // If parsing fails, use the raw chunk
+      }
+      
+      // Send processed chunk to callback
       if (onChunk) {
-        onChunk(chunk);
+        console.log("Sending chunk to callback:", chunkContent);
+        onChunk(chunkContent);
       }
     }
 
     console.log("Complete response received:", accumulatedText);
 
+    // Parse JSON response and extract message content
+    let messageContent = accumulatedText;
+    try {
+      const jsonResponse = JSON.parse(accumulatedText);
+      if (jsonResponse.message) {
+        messageContent = jsonResponse.message;
+      }
+    } catch (e) {
+      // If parsing fails, use the raw response
+      console.warn("Failed to parse JSON response, using raw text:", e);
+    }
+
     // Stop typing indicator
     if (onTyping) onTyping(false);
 
-    // Call completion callback
+    // Call completion callback with extracted message
     if (onComplete) {
       onComplete({
-        text: accumulatedText,
+        text: messageContent,
         timestamp: new Date().toISOString()
       });
     }
 
-    return { text: accumulatedText };
+    return { text: messageContent };
 
   } catch (error) {
     console.error("GeniStudio API request failed:", error);

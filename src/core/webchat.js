@@ -26,12 +26,10 @@ import { generateUserId, groupMessagesBySender } from "../utils/ui-helpers";
  */
 export function initWebChat(userConfig = {}) {
   let config = {
-    apiUrl: "https://message.geneline-x.net/api/v1/message",
+    apiUrl: "http://localhost:3000/api/chatbot/stream",
     chatbotId: "",
-    apiKey: "",
     userEmail: "",
-    buttonColor: "#007bff",
-    position: "bottom-right",
+    buttonColor: "",
     injectCSS: false,
     ...userConfig,
   };
@@ -43,11 +41,6 @@ export function initWebChat(userConfig = {}) {
   // Validate required configuration
   if (!config.chatbotId) {
     console.error("GeniStudio: chatbotId is required");
-    return null;
-  }
-  
-  if (!config.apiKey) {
-    console.error("GeniStudio: apiKey is required");
     return null;
   }
 
@@ -129,28 +122,21 @@ export function initWebChat(userConfig = {}) {
       // Position the chat container based on button position
       positionChatContainer();
 
-      // First remove hidden class
+      // Show the overlay
       overlay.classList.remove("hidden");
+      overlay.classList.add("visible");
 
-      // Give the browser a moment to process the display change before adding the visible class
-      setTimeout(() => {
-        overlay.classList.add("visible");
-
-        // On mobile, add a body class to prevent scrolling
-        if (isMobile) {
-          document.body.classList.add("webchat-open");
-          // Hide the chat button on mobile fullscreen mode if needed
-          // chatButton.style.visibility = 'hidden';
-        }
-      }, 10);
+      // On mobile, add a body class to prevent scrolling
+      if (isMobile) {
+        document.body.classList.add("webchat-open");
+      }
 
       renderMessages();
 
       // Update button appearance for "close" state
       if (chatButton) {
-        chatButton.innerHTML = "✕"; // Change to an X icon
-        chatButton.title = "Close chat";
         chatButton.classList.add("is-open");
+        chatButton.title = "Close chat";
       }
 
       // Emit chat opened event for React integration
@@ -159,8 +145,9 @@ export function initWebChat(userConfig = {}) {
       const input = document.getElementById("GeniStudio-input");
       if (input && !input.disabled) input.focus();
     } else {
-      // First remove the visible class to trigger animation
+      // Hide the overlay
       overlay.classList.remove("visible");
+      overlay.classList.add("hidden");
 
       // Check if we're on mobile
       const isMobile = window.innerWidth <= 768;
@@ -168,20 +155,12 @@ export function initWebChat(userConfig = {}) {
       // On mobile, remove body class that prevents scrolling
       if (isMobile) {
         document.body.classList.remove("webchat-open");
-        // Restore chat button visibility if it was hidden
-        // chatButton.style.visibility = 'visible';
       }
-
-      // Wait for animation to complete before hiding the overlay
-      setTimeout(() => {
-        overlay.classList.add("hidden");
-      }, 300); // Match this with the CSS transition duration
 
       // Update button appearance for "open" state
       if (chatButton) {
-        chatButton.innerHTML = "💬"; // Change back to chat icon
-        chatButton.title = "Open chat";
         chatButton.classList.remove("is-open");
+        chatButton.title = "Open chat";
       }
 
       // Emit chat closed event for React integration
@@ -242,8 +221,9 @@ export function initWebChat(userConfig = {}) {
     isOpen = false;
     const overlay = document.getElementById("GeniStudio-chat-overlay");
 
-    // First remove the visible class to trigger animation
+    // Hide the overlay
     overlay.classList.remove("visible");
+    overlay.classList.add("hidden");
 
     // Check if we're on mobile
     const isMobile = window.innerWidth <= 768;
@@ -251,22 +231,13 @@ export function initWebChat(userConfig = {}) {
     // On mobile, remove body class that prevents scrolling
     if (isMobile) {
       document.body.classList.remove("webchat-open");
-      // Restore chat button visibility if it was hidden
-      // const chatButton = document.getElementById('GeniStudio-chat-button');
-      // if (chatButton) chatButton.style.visibility = 'visible';
     }
-
-    // Wait for animation to complete before hiding the overlay
-    setTimeout(() => {
-      overlay.classList.add("hidden");
-    }, 300); // Match this with the CSS transition duration
 
     // Reset the chat button to "open" state
     const chatButton = document.getElementById("GeniStudio-chat-button");
     if (chatButton) {
-      chatButton.innerHTML = "💬";
-      chatButton.title = "Open chat";
       chatButton.classList.remove("is-open");
+      chatButton.title = "Open chat";
     }
 
     // Emit chat closed event for React integration
@@ -274,6 +245,7 @@ export function initWebChat(userConfig = {}) {
   }
 
   function handleAPIStreamingChunk(chunk) {
+    console.log("Received API streaming chunk:", chunk);
     if (!currentStreamingMessage) {
       // Create a new streaming message if one doesn't exist
       const now = new Date();
@@ -322,14 +294,12 @@ export function initWebChat(userConfig = {}) {
       }
     }
     
-    // Scroll to bottom
-    const messagesContainer = document.getElementById("GeniStudio-messages");
-    if (messagesContainer) {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
+    // Scroll to bottom with improved timing for streaming updates
+    forceScrollToBottom();
   }
 
   function handleAPIStreamingComplete(data) {
+    console.log("API streaming complete received:", data);
     if (currentStreamingMessage) {
       // Calculate and log response time
       const lastUserMessage = [...messages]
@@ -506,8 +476,8 @@ export function initWebChat(userConfig = {}) {
     const typingElement = renderTypingIndicator(stage, true);
     container.appendChild(typingElement);
 
-    // Auto-scroll to the new typing indicator
-    scrollToBottom();
+    // Auto-scroll to the new typing indicator with improved timing
+    forceScrollToBottom();
   }
 
   function showTypingIndicator(stage = "typing") {
@@ -557,12 +527,40 @@ export function initWebChat(userConfig = {}) {
   let currentProcessingStage = null;
 
   /**
-   * Scroll to the bottom of the messages container
+   * Scroll to the bottom of the messages container with better timing
    */
   function scrollToBottom() {
     const messagesContainer = document.getElementById("GeniStudio-messages");
     if (messagesContainer) {
+      // Use requestAnimationFrame to ensure DOM updates are complete
+      requestAnimationFrame(() => {
+        // Double requestAnimationFrame to ensure all layouts are complete
+        requestAnimationFrame(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+      });
+    }
+  }
+
+  /**
+   * Force scroll to bottom with smooth behavior (alternative method)
+   */
+  function forceScrollToBottom() {
+    const messagesContainer = document.getElementById("GeniStudio-messages");
+    if (messagesContainer) {
+      // Try multiple methods to ensure scrolling works
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      // Also try scrollIntoView on the last message
+      const lastMessage = messagesContainer.lastElementChild;
+      if (lastMessage) {
+        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+      
+      // Final fallback with setTimeout
+      setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 100);
     }
   }
 
@@ -584,8 +582,8 @@ export function initWebChat(userConfig = {}) {
     const messageElement = renderMessageBubble(message, true);
     container.appendChild(messageElement);
 
-    // Auto-scroll to the new message
-    scrollToBottom();
+    // Auto-scroll to the new message with improved timing
+    forceScrollToBottom();
   }
 
   function renderMessages() {
@@ -656,7 +654,8 @@ export function initWebChat(userConfig = {}) {
       }
     }
 
-    container.scrollTop = container.scrollHeight;
+    // Ensure we scroll to bottom after all content is rendered
+    forceScrollToBottom();
   }
 
   function sendMessage(event) {
@@ -688,6 +687,17 @@ export function initWebChat(userConfig = {}) {
 
     messages.push(userMessage);
     input.value = "";
+    
+    // Reset textarea height to default size
+    const initialHeight = input.getAttribute('data-initial-height') || '47px';
+    input.style.height = initialHeight;
+    
+    // Reset form border radius to default
+    const form = document.querySelector(".chat-form");
+    if (form) {
+      form.style.borderRadius = "25px";
+    }
+    
     disableInput();
 
     // Add the new user message with animation instead of re-rendering all
@@ -708,7 +718,6 @@ export function initWebChat(userConfig = {}) {
       config.chatbotId,
       config.userEmail,
       message,
-      config.apiKey,
       handleAPIStreamingChunk,
       handleAPIStreamingComplete,
       handleAPIError,
@@ -759,7 +768,6 @@ export function initWebChat(userConfig = {}) {
       config.chatbotId,
       config.userEmail,
       text, // Use text instead of value for the message content
-      config.apiKey,
       handleAPIStreamingChunk,
       handleAPIStreamingComplete,
       handleAPIError,
