@@ -298,9 +298,8 @@
   padding: 25px 22px;
   gap: 20px;
   display: flex;
-  height: 460px;
+  margin-bottom: 60px;
   overflow-y: auto;
-  margin-bottom: 82px;
   flex-direction: column;
   scrollbar-width: thin;
   scrollbar-color: #ccccf5 transparent;
@@ -376,6 +375,8 @@
   font-size: 0.95rem;
   line-height: 1.5;
   word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .chat-body .bot-message.thinking .message-text {
@@ -551,34 +552,190 @@
   margin-bottom: 0;
 }
 
-/* Responsive */
-@media (max-width: 520px) {
+/* Responsive Design - Mobile Optimization */
+@media (max-width: 768px) {
   .webchat-button {
     right: 20px;
     bottom: 20px;
+    height: 60px;
+    width: 60px;
   }
   
   .webchat-overlay {
     right: 0;
     bottom: 0;
-    height: 100%;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
     border-radius: 0;
-    width: 100%;
     transform-origin: center;
   }
   
-  .webchat-overlay .chat-header {
-    padding: 12px 15px;
+  .webchat-container {
+    height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chat-header {
+    padding: 16px 20px;
+    background: var(--webchat-primary-color);
+    flex-shrink: 0;
+  }
+  
+  .chat-header .header-info .logo-text {
+    font-size: 1.2rem;
   }
   
   .chat-body {
-    height: calc(100vh - 140px);
-    padding: 25px 15px;
-    margin-bottom: 70px;
+    flex: 1;
+    margin-bottom: 0;
+    background: var(--webchat-light-bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .webchat-messages {
+    padding: 20px 16px;
+    gap: 16px;
+    flex: 1;
+    overflow-y: auto;
+    height: auto;
   }
   
   .chat-footer {
-    padding: 10px 15px 15px;
+    position: relative;
+    padding: 16px 20px 20px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    flex-shrink: 0;
+  }
+  
+  .chat-form {
+    border-radius: 20px !important;
+  }
+  
+  .chat-form .message-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+    min-height: 44px;
+    max-height: 120px;
+    /* Fix mobile input issues */
+    -webkit-user-select: text;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+    pointer-events: auto;
+    user-select: text;
+    /* Ensure proper input behavior */
+    -webkit-touch-callout: default;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .webchat-powered-by {
+    display: none; /* Hide "Powered by GeniStudio" on mobile */
+  }
+}
+
+/* Tablet specific styles */
+@media (max-width: 768px) and (min-width: 481px) {
+  .webchat-overlay {
+    right: 20px;
+    bottom: 20px;
+    left: 20px;
+    top: 20px;
+    height: calc(100vh - 40px);
+    width: calc(100vw - 40px);
+    border-radius: 15px;
+  }
+  
+  .webchat-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chat-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Small mobile phones */
+@media (max-width: 480px) {
+  .webchat-button {
+    height: 56px;
+    width: 56px;
+    right: 16px;
+    bottom: 16px;
+  }
+  
+  .webchat-messages {
+    padding: 16px 12px;
+    gap: 12px;
+    /* Better touch scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  .chat-footer {
+    padding: 12px 16px 16px;
+  }
+  
+  .message .message-text {
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 90%;
+  }
+  
+  .bot-avatar, .user-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+  
+  .chat-form .message-input {
+    /* Prevent iOS zoom */
+    font-size: 16px !important;
+    min-height: 48px;
+  }
+  
+  .chat-form .chat-controls .send-button {
+    height: 40px;
+    width: 40px;
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 768px) {
+  /* Improve touch scrolling performance */
+  .webchat-overlay {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .webchat-messages {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Prevent viewport resize on input focus */
+  .chat-form .message-input {
+    transform: translateZ(0); /* Hardware acceleration */
+  }
+  
+  /* Better tap targets */
+  .webchat-button {
+    /* Ensure minimum 44px tap target */
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 

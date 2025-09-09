@@ -5,7 +5,7 @@
 
 /**
  * Send a message to the GeniStudio API endpoint with streaming support
- * @param {string} apiUrl - API URL
+ * @param {string} apiUrl - API URL (defaults to https://genistud.io/api/message)
  * @param {string} chatbotId - Chatbot ID
  * @param {string} email - User email
  * @param {string} message - Message to send
@@ -16,7 +16,7 @@
  * @returns {Promise} - Promise that resolves when request is complete
  */
 export async function sendMessageToAPI(
-  apiUrl,
+  apiUrl = 'https://genistud.io/api/message',
   chatbotId,
   email,
   message,
@@ -40,9 +40,10 @@ export async function sendMessageToAPI(
     const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        timeout: 15000
     });
 
     console.log("API Response status:", response.status, response.statusText);
@@ -62,7 +63,7 @@ export async function sendMessageToAPI(
       throw new Error(errorMessage);
     }
 
-    // Handle streamed response
+    // Handle streamed response - process chunk by chunk like axios stream
     const reader = response.body?.getReader();
     if (!reader) {
       // If no streaming support, read the whole response
@@ -72,7 +73,7 @@ export async function sendMessageToAPI(
       // Stop typing indicator
       if (onTyping) onTyping(false);
       
-      // Try to parse as JSON
+      // Process the complete response
       let messageContent = responseText;
       try {
         const jsonResponse = JSON.parse(responseText);
@@ -94,46 +95,36 @@ export async function sendMessageToAPI(
       return { text: messageContent };
     }
 
-    let accumulatedText = '';
+    let botResponse = '';
     
+    // Process streaming chunks similar to axios stream handling
     while (true) {
       const { done, value } = await reader.read();
       
       if (done) break;
       
       const chunk = new TextDecoder().decode(value);
-      accumulatedText += chunk;
+      botResponse += chunk;
       
-      // Try to extract message from chunk if it's JSON
-      let chunkContent = chunk;
-      try {
-        const jsonChunk = JSON.parse(chunk);
-        if (jsonChunk.message) {
-          chunkContent = jsonChunk.message;
-        }
-      } catch (e) {
-        // If parsing fails, use the raw chunk
-      }
-      
-      // Send processed chunk to callback
+      // Send raw chunk content to callback for real-time display
       if (onChunk) {
-        console.log("Sending chunk to callback:", chunkContent);
-        onChunk(chunkContent);
+        console.log("Sending chunk to callback:", chunk);
+        onChunk(chunk);
       }
     }
 
-    console.log("Complete response received:", accumulatedText);
+    console.log("Complete response received:", botResponse);
 
-    // Parse JSON response and extract message content
-    let messageContent = accumulatedText;
+    // Parse the complete response like the axios implementation
+    let messageContent = botResponse;
     try {
-      const jsonResponse = JSON.parse(accumulatedText);
+      const jsonResponse = JSON.parse(botResponse);
       if (jsonResponse.message) {
         messageContent = jsonResponse.message;
       }
     } catch (e) {
-      // If parsing fails, use the raw response
-      console.warn("Failed to parse JSON response, using raw text:", e);
+      // If parsing fails, use the raw response (for plain text responses)
+      console.warn("Response is not JSON, using raw text:", e);
     }
 
     // Stop typing indicator

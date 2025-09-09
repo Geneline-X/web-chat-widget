@@ -155,6 +155,12 @@ export function createChatContainer(config, api) {
             placeholder="Type your message..."
             required
             rows="1"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="sentences"
+            spellcheck="true"
+            inputmode="text"
+            aria-label="Type your message"
           ></textarea>
           <div class="chat-controls">
             <button type="submit" id="GeniStudio-send-btn" class="send-button">
@@ -206,6 +212,28 @@ export function createChatContainer(config, api) {
         if (e.key === "Enter" && !e.shiftKey && userMessage && window.innerWidth > 768) {
           e.preventDefault();
           api.sendMessage(e);
+        }
+      });
+
+      // Fix mobile input issues
+      messageInput.addEventListener("focus", (e) => {
+        e.target.setAttribute("inputmode", "text");
+        // Ensure the input is properly focused on mobile
+        setTimeout(() => {
+          e.target.focus();
+        }, 100);
+      });
+
+      // Prevent any interference with mobile keyboards
+      messageInput.addEventListener("touchstart", (e) => {
+        e.stopPropagation();
+      });
+
+      messageInput.addEventListener("touchend", (e) => {
+        e.stopPropagation();
+        // Ensure focus on mobile
+        if (window.innerWidth <= 768) {
+          e.target.focus();
         }
       });
     }
