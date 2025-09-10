@@ -35,12 +35,17 @@
   --webchat-light-bg: var(--light-background, var(--gray-50, #f9fafb));
 }
 
-/* * {
+/* Scoped CSS reset - only affects chatbot elements */
+.webchat-button,
+.webchat-overlay,
+.webchat-overlay *,
+.webchat-container,
+.webchat-container * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: "Inter", sans-serif;
-} */
+}
 
 /* Chat Button Styles */
 .webchat-button {
@@ -192,7 +197,10 @@
   position: fixed;
   right: 35px;
   bottom: 105px;
-  width: 420px;
+  width: min(420px, 90vw); /* Responsive width: max 420px or 90% of viewport width */
+  max-width: 420px;
+  min-width: 320px; /* Minimum width for usability */
+  max-height: 80vh; /* Maximum height as 80% of viewport */
   overflow: hidden;
   background: var(--webchat-bg-color);
   border-radius: 15px;
@@ -221,8 +229,9 @@
 .webchat-container {
   display: flex;
   flex-direction: column;
-  height: 600px;
+  height: min(600px, 80vh); /* Responsive height: max 600px or 80% of viewport height */
   width: 100%;
+  max-height: 80vh; /* Ensure it doesn't exceed 80% of viewport height */
 }
 
 /* Chat Header */
@@ -285,7 +294,8 @@
 /* Chat Body */
 .chat-body {
   display: flex;
-  height: 460px;
+  height: calc(100% - 140px); /* Dynamic height: full container minus header/footer space */
+  min-height: 300px; /* Minimum height for usability */
   background: var(--webchat-light-bg);
   margin-bottom: 10px;
   flex-direction: column;
@@ -552,6 +562,55 @@
   margin-bottom: 0;
 }
 
+/* Large Desktop Screens (1440px+) */
+@media (min-width: 1440px) {
+  .webchat-overlay {
+    width: min(450px, 90vw);
+    max-width: 450px;
+  }
+  
+  .webchat-container {
+    height: min(650px, 75vh);
+    max-height: 75vh;
+  }
+  
+  .chat-body {
+    height: calc(100% - 150px);
+  }
+}
+
+/* Medium Desktop Screens (1024px to 1439px) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .webchat-overlay {
+    width: min(400px, 85vw);
+    max-width: 400px;
+  }
+  
+  .webchat-container {
+    height: min(580px, 80vh);
+    max-height: 80vh;
+  }
+}
+
+/* Small Desktop/Laptop Screens (769px to 1023px) */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .webchat-overlay {
+    width: min(380px, 85vw);
+    max-width: 380px;
+    right: 25px;
+    bottom: 90px;
+  }
+  
+  .webchat-container {
+    height: min(520px, 75vh);
+    max-height: 75vh;
+  }
+  
+  .chat-body {
+    height: calc(100% - 130px);
+  }
+}
+
 /* Responsive Design - Mobile Optimization */
 @media (max-width: 768px) {
   .webchat-button {
@@ -567,14 +626,23 @@
     left: 0;
     top: 0;
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for better mobile support */
     width: 100vw;
+    max-width: 100vw;
+    min-width: 100vw;
+    max-height: 100vh;
+    max-height: 100dvh;
     border-radius: 0;
     transform-origin: center;
+    position: fixed;
   }
   
   .webchat-container {
     height: 100vh;
+    height: 100dvh;
     max-height: 100vh;
+    max-height: 100dvh;
+    width: 100%;
     display: flex;
     flex-direction: column;
   }
@@ -583,6 +651,10 @@
     padding: 16px 20px;
     background: var(--webchat-primary-color);
     flex-shrink: 0;
+    min-height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
   
   .chat-header .header-info .logo-text {
@@ -596,6 +668,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0;
+    height: auto;
   }
 
   .webchat-messages {
@@ -604,14 +678,20 @@
     flex: 1;
     overflow-y: auto;
     height: auto;
+    margin-bottom: 0;
+    /* Better scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   
   .chat-footer {
     position: relative;
-    padding: 16px 20px 20px;
+    padding: 16px 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
     background: #fff;
     border-top: 1px solid #eee;
     flex-shrink: 0;
+    min-height: 80px;
   }
   
   .chat-form {
@@ -634,6 +714,8 @@
     /* Ensure proper input behavior */
     -webkit-touch-callout: default;
     -webkit-tap-highlight-color: transparent;
+    /* Prevent viewport jumping */
+    transform: translateZ(0);
   }
   
   .webchat-powered-by {
@@ -676,6 +758,15 @@
     bottom: 16px;
   }
   
+  .chat-header {
+    padding: 12px 16px;
+    min-height: 56px;
+  }
+  
+  .chat-header .header-info .logo-text {
+    font-size: 1.1rem;
+  }
+  
   .webchat-messages {
     padding: 16px 12px;
     gap: 12px;
@@ -685,13 +776,16 @@
   }
   
   .chat-footer {
-    padding: 12px 16px 16px;
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+    min-height: 72px;
   }
   
   .message .message-text {
     font-size: 14px;
     line-height: 1.4;
-    max-width: 90%;
+    max-width: 85%;
+    padding: 10px 12px;
   }
   
   .bot-avatar, .user-avatar {
@@ -703,14 +797,15 @@
   .chat-form .message-input {
     /* Prevent iOS zoom */
     font-size: 16px !important;
-    min-height: 48px;
+    min-height: 40px;
+    padding: 10px 14px;
   }
   
   .chat-form .chat-controls .send-button {
-    height: 40px;
-    width: 40px;
-    min-height: 40px;
-    min-width: 40px;
+    height: 36px;
+    width: 36px;
+    min-height: 36px;
+    min-width: 36px;
   }
 }
 

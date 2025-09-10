@@ -26,7 +26,6 @@ import { generateUserId, groupMessagesBySender } from "../utils/ui-helpers";
  */
 export function initWebChat(userConfig = {}) {
   let config = {
-    apiUrl: "https://genibot-mini-sever.onrender.com/api/chatbot/stream",
     chatbotId: "",
     userEmail: "",
     buttonColor: "",
