@@ -1,5 +1,5 @@
 /**
- * GeniStudio Web Chat Widget v2.0.7
+ * GeniStudio Web Chat Widget v2.0.8
  * https://genistud.io
  * 
  * @license MIT

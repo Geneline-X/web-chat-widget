@@ -674,6 +674,7 @@
 
   .webchat-messages {
     padding: 20px 16px;
+    padding-top: 80px; /* Account for sticky header */
     gap: 16px;
     flex: 1;
     overflow-y: auto;
